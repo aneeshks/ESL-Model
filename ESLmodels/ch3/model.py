@@ -33,7 +33,6 @@ class LeastSquareModel(BaseStatModel):
     @property
     @lazy_method
     def std_err(self):
-
         var_beta_hat = self.math.inv(self.train_x.T @ self.train_x) * self.sigma_hat
         return var_beta_hat.diagonal() ** 0.5
 
@@ -87,8 +86,6 @@ class BestSubsetSelection(LeastSquareModel):
         rss_min = None
 
         cm = combinations(range(1, p+1), k)
-
-
         for cols in list(cm):
             cols = (0, *cols)
             X = X_com[:, cols]
