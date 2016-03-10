@@ -49,7 +49,7 @@ def test_least_square_model(prostate_data):
 
     result = lsm.test(test_x, test_y)
 
-    print('test error: ', result.rss)
+    print('test error: ', result.mse)
 
     from sklearn.linear_model import LinearRegression
 
@@ -59,4 +59,23 @@ def test_least_square_model(prostate_data):
     print('sklean', np.mean(((lr.predict(test_x)) - test_y) **2))
 
 
-    assert 0
+
+def test_best_select(prostate_data):
+    from ESLmodels.ch3.model import BestSubsetSelection
+    train_x, train_y, features, test_x, test_y = prostate_data
+    bss = BestSubsetSelection(train_x=train_x, train_y=train_y, k=2, features_name=features)
+    bss.pre_processing()
+    bss.train()
+    print(bss.select_column)
+    print('cof', bss.beta_hat)
+    print('rss:', bss.rss)
+    print('test err', bss.test(test_x, test_y).mse)
+    lsm = LeastSquareModel(train_x=train_x[:,:2], train_y=train_y, features_name=features)
+    lsm.pre_processing()
+
+    lsm.train()
+
+    print('lsm beta',lsm.beta_hat)
+    print('lsm rss', lsm.rss)
+    # print('gg', sum((bss.pre_processing_x(train_x) @ lsm.beta_hat)**2))
+    # assert  0

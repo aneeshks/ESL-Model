@@ -23,7 +23,7 @@ class Result:
 
     @property
     @lazy_method
-    def rss(self):
+    def mse(self):
         return mathcollection.sum((self.y - self.y_hat)**2)/ self.y.shape[0]
 
     @lazy_method
@@ -52,6 +52,18 @@ class BaseStatModel:
 
         return (x-self._x_mean_) / self._x_std_
 
+
+    @property
+    def N(self):
+        return self._raw_train_x.shape[0]
+
+    @property
+    def p(self):
+        """
+        number of features exclude intercept one
+        :return:
+        """
+        return self._raw_train_x.shape[1]
 
 
     def pre_processing_x(self, x):

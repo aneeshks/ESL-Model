@@ -1,7 +1,7 @@
 from ESLmodels.base import BaseStatModel
 from ESLmodels.base import np
 from ESLmodels.utils import lazy_method
-
+from itertools import combinations
 
 class LeastSquareModel(BaseStatModel):
 
@@ -71,5 +71,39 @@ class LeastSquareModel(BaseStatModel):
         N, p1 = self.train_x.shape
 
         return ((rss0-rss1) / (len(cols_index))) / (rss1 / (N - p1))
+
+
+class BestSubsetSelection(LeastSquareModel):
+    def __init__(self, *args, k=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.k = k
+        self.select_column = []
+
+    def train(self):
+        X_com = self.train_x
+        y = self.train_y
+        k = self.k
+        p = self.p
+        rss_min = None
+
+        cm = combinations(range(1, p+1), k)
+
+
+        for cols in list(cm):
+            cols = (0, *cols)
+            X = X_com[:, cols]
+            beta_hat = self.math.inv(X.T @ X) @ X.T @ y
+            rss = np.sum((y - X @ beta_hat)**2)
+            if (rss_min is None) or rss < rss_min:
+                self.select_column = cols
+                self.beta_hat = beta_hat
+                rss_min = rss
+
+    def predict(self, x):
+        x = self.pre_processing_x(x)
+        x = x[:,self.select_column]
+        return x @ self.beta_hat
+
+
 
 
