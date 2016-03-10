@@ -19,11 +19,6 @@ class LeastSquareModel(BaseStatModel):
 
     @property
     @lazy_method
-    def y_hat(self):
-        return self.predict(self._raw_train_x)
-
-    @property
-    @lazy_method
     def sigma_hat(self):
         """
         (3.8)
@@ -49,10 +44,6 @@ class LeastSquareModel(BaseStatModel):
         return self.beta_hat / self.std_err
 
 
-    @property
-    @lazy_method
-    def rss(self):
-        return self.math.sum((self.y_hat - self.train_y)**2)
 
     def F_statistic(self, remove_cols):
         """

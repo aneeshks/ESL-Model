@@ -78,6 +78,16 @@ class BaseStatModel:
         return Result(y_hat, y)
 
     @property
+    @lazy_method
+    def y_hat(self):
+        return self.predict(self._raw_train_x)
+
+    @property
+    @lazy_method
+    def rss(self):
+        return self.math.sum((self.y_hat - self.train_y)**2)
+
+    @property
     def math(self):
         return mathcollection
 
