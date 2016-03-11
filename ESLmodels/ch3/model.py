@@ -3,6 +3,8 @@ from ESLmodels.base import np
 from ESLmodels.utils import lazy_method
 from itertools import combinations
 
+
+
 class LeastSquareModel(BaseStatModel):
 
 
@@ -100,6 +102,29 @@ class BestSubsetSelection(LeastSquareModel):
         x = self.pre_processing_x(x)
         x = x[:,self.select_column]
         return x @ self.beta_hat
+
+
+
+class RidgeModel(LeastSquareModel):
+    def __init__(self, *args, **kwargs ):
+        self.alpha = kwargs.pop('alpha')
+        self.solve = kwargs.pop('solve', 'svd')
+        super().__init__(*args, **kwargs)
+
+    def train(self):
+        X = self.train_x
+        y = self.train_y
+
+        if self.solve == 'svd':
+            u, d, vt = self.math.svd(X, full_matrices=False)
+            ds = (d / (d**2 + self.alpha))
+            self.beta_hat = vt.T @ u.T @ y * ds
+
+        elif self.solve == 'raw':
+            self.beta_hat = self.math.inv(X.T @ X + np.eye(X.shape)*self.alpha) @ X.T @ y
+
+        else:
+            raise NotImplementedError
 
 
 

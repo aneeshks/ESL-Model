@@ -7,6 +7,7 @@ class MathCollection:
     def __init__(self):
         self.inv = linalg.inv
         self.sum = np.sum
+        self.svd = np.linalg.svd
 
     def __repr__(self):
         return 'Math Collection'
@@ -42,6 +43,7 @@ class BaseStatModel:
         self.train_x =  self._raw_train_x = train_x
         self.train_y = train_y
         self.features_name = features_name
+        self.beta_hat = None
 
 
 

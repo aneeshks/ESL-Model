@@ -60,7 +60,7 @@ def test_least_square_model(prostate_data):
 
 
 
-def test_best_select(prostate_data):
+def _test_best_select(prostate_data):
     from ESLmodels.ch3.model import BestSubsetSelection
     train_x, train_y, features, test_x, test_y = prostate_data
     bss = BestSubsetSelection(train_x=train_x, train_y=train_y, k=2, features_name=features)
@@ -75,7 +75,26 @@ def test_best_select(prostate_data):
 
     lsm.train()
 
-    print('lsm beta',lsm.beta_hat)
-    print('lsm rss', lsm.rss)
+    assert lsm.rss == bss.rss
     # print('gg', sum((bss.pre_processing_x(train_x) @ lsm.beta_hat)**2))
     # assert  0
+
+def test_ridge(prostate_data):
+    from ESLmodels.ch3.model import RidgeModel
+    train_x, train_y, features, test_x, test_y = prostate_data
+    from sklearn.preprocessing import scale
+    from sklearn.linear_model import RidgeCV
+
+    als=[(i/1) for i in range(1, 10000)]
+    rcv = RidgeCV(alphas=als)
+    rcv.fit(scale(train_x), train_y)
+    print(rcv.alpha_)
+    print(rcv.intercept_, rcv.coef_)
+    print('te',np.mean((rcv.predict(scale(test_x)) -test_y)**2))
+
+    r = RidgeModel(train_x=train_x, train_y=train_y, alpha=rcv.alpha_)
+    r.pre_processing()
+    r.train()
+    print(r.test(test_x, test_y).mse)
+    print(r.beta_hat)
+    assert 0
