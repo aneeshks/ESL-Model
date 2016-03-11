@@ -5,14 +5,10 @@ from itertools import combinations
 
 
 
-class LeastSquareModel(BaseStatModel):
-
-
-
-    def train(self):
-        x = self.train_x
-        y = self.train_y
-        self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
+class LinearModel(BaseStatModel):
+    def pre_processing_x(self, x):
+        x = self.standardize(x)
+        return x
 
     def predict(self, x):
         x = self.pre_processing_x(x)
@@ -73,12 +69,37 @@ class LeastSquareModel(BaseStatModel):
 
         return ((rss0-rss1) / (len(cols_index))) / (rss1 / (N - p1))
 
+    @property
+    @lazy_method
+    def rss(self):
+        return self.math.sum((self.y_hat - self.train_y)**2)
 
-class BestSubsetSelection(LeastSquareModel):
+
+class LeastSquareModel(LinearModel):
+    def pre_processing_x(self, x):
+        x = super().pre_processing_x(x)
+        x = np.insert(x, 0, 1, axis=1)
+        return x
+
+    def train(self):
+        x = self.train_x
+        y = self.train_y
+        self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
+
+
+
+class BestSubsetSelection(LinearModel):
     def __init__(self, *args, k=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.k = k
-        self.select_column = []
+        self.select_column = None
+
+    def pre_processing_x(self, x):
+        x = super().pre_processing_x(x)
+        x = np.insert(x, 0, 1, axis=1)
+        if self.select_column:
+            x = x[:, self.select_column]
+        return x
 
     def train(self):
         X_com = self.train_x
@@ -98,14 +119,10 @@ class BestSubsetSelection(LeastSquareModel):
                 self.beta_hat = beta_hat
                 rss_min = rss
 
-    def predict(self, x):
-        x = self.pre_processing_x(x)
-        x = x[:,self.select_column]
-        return x @ self.beta_hat
 
 
 
-class RidgeModel(LeastSquareModel):
+class RidgeModel(LinearModel):
     def __init__(self, *args, **kwargs ):
         self.alpha = kwargs.pop('alpha')
         self.solve = kwargs.pop('solve', 'svd')
@@ -118,14 +135,28 @@ class RidgeModel(LeastSquareModel):
         if self.solve == 'svd':
             u, d, vt = self.math.svd(X, full_matrices=False)
             ds = (d / (d**2 + self.alpha))
-            self.beta_hat = vt.T @ u.T @ y * ds
+            self.beta_hat = vt.T @ (ds * (u.T @ y))
+
 
         elif self.solve == 'raw':
-            self.beta_hat = self.math.inv(X.T @ X + np.eye(X.shape)*self.alpha) @ X.T @ y
+            self.beta_hat = self.math.inv(X.T @ X + np.eye(self.p)*self.alpha) @ X.T @ y
 
         else:
             raise NotImplementedError
 
+        self.intercept = np.mean(y)
+        self.beta_hat = np.insert(self.beta_hat, 0, self.intercept)
+
+    def predict(self, x):
+        x = self.pre_processing_x(x)
+        x = np.insert(x, 0, 1, axis=1)
+        return x @ self.beta_hat
+
+    @property
+    @lazy_method
+    def df(self):
+        u, d, vt = self.math.svd(self._raw_train_x)
+        return self.math.sum(d**2/(d**2 + self.alpha))
 
 
 

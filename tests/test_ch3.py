@@ -29,7 +29,7 @@ def prostate_data(data):
     return train_x.values, train_y.values, features, test_x.values, test_y.values
 
 
-def test_least_square_model(prostate_data):
+def _test_least_square_model(prostate_data):
     train_x, train_y, features, test_x, test_y = prostate_data
     lsm = LeastSquareModel(train_x=train_x, train_y=train_y, features_name=features)
     lsm.pre_processing()
@@ -56,8 +56,7 @@ def test_least_square_model(prostate_data):
     lr = LinearRegression()
 
     lr.fit(train_x, train_y)
-    print('sklean', np.mean(((lr.predict(test_x)) - test_y) **2))
-
+    assert np.isclose(result.mse, np.mean(((lr.predict(test_x)) - test_y) **2))
 
 
 def _test_best_select(prostate_data):
@@ -83,18 +82,35 @@ def test_ridge(prostate_data):
     from ESLmodels.ch3.model import RidgeModel
     train_x, train_y, features, test_x, test_y = prostate_data
     from sklearn.preprocessing import scale
-    from sklearn.linear_model import RidgeCV
+    from sklearn.linear_model import RidgeCV, ridge_regression
 
-    als=[(i/1) for i in range(1, 10000)]
-    rcv = RidgeCV(alphas=als)
-    rcv.fit(scale(train_x), train_y)
-    print(rcv.alpha_)
-    print(rcv.intercept_, rcv.coef_)
-    print('te',np.mean((rcv.predict(scale(test_x)) -test_y)**2))
+    # als=[(i/100) for i in range(1, 10000)]
+    # rcv = RidgeCV(alphas=als, solver='svd')
+    # rcv.fit(scale(train_x), train_y)
+    # print(rcv.alpha_)
+    # print(rcv.intercept_, rcv.coef_)
+    # print('te',np.mean((rcv.predict(scale(test_x)) -test_y)**2))
 
-    r = RidgeModel(train_x=train_x, train_y=train_y, alpha=rcv.alpha_)
+    # min_df = 99999999999999999
+    # best_alpha = None
+    # for i in range(1, 1000):
+    #     alpha = i/100
+    #     r = RidgeModel(train_x=train_x, train_y=train_y, alpha=alpha, solve='svd')
+    #     r.pre_processing()
+    #     r.train()
+    #     if abs(r.df - 7) < min_df:
+    #         best_alpha = alpha
+    #         min_df = r.df - 7
+
+    r = RidgeModel(train_x=train_x, train_y=train_y, alpha=4, solve='svd')
     r.pre_processing()
     r.train()
+    print(ridge_regression(scale(train_x), train_y, alpha=4, solver='svd'))
+
+    # print('df', r.df)
+    # print('alpha', r.alpha)
+    # print('rss', min_df, r.rss)
     print(r.test(test_x, test_y).mse)
+    # print(skr.pred)
     print(r.beta_hat)
     assert 0

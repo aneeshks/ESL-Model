@@ -1,13 +1,14 @@
 import  numpy as np
 from .utils import lazy_method
 from numpy import linalg
+from scipy.linalg import svd
 
 
 class MathCollection:
     def __init__(self):
         self.inv = linalg.inv
         self.sum = np.sum
-        self.svd = np.linalg.svd
+        self.svd = svd
 
     def __repr__(self):
         return 'Math Collection'
@@ -43,7 +44,6 @@ class BaseStatModel:
         self.train_x =  self._raw_train_x = train_x
         self.train_y = train_y
         self.features_name = features_name
-        self.beta_hat = None
 
 
 
@@ -69,9 +69,6 @@ class BaseStatModel:
 
 
     def pre_processing_x(self, x):
-
-        x = self.standardize(x)
-        x = np.insert(x, 0, 1, axis=1)
         return x
 
     def pre_processing_y(self, y):
@@ -96,10 +93,6 @@ class BaseStatModel:
     def y_hat(self):
         return self.predict(self._raw_train_x)
 
-    @property
-    @lazy_method
-    def rss(self):
-        return self.math.sum((self.y_hat - self.train_y)**2)
 
     @property
     def math(self):
