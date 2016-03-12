@@ -45,8 +45,6 @@ class BaseStatModel:
         self.train_y = train_y
         self.features_name = features_name
 
-
-
     def standardize(self, x, axis=0, with_mean=True, with_std=True):
         if getattr(self, '_x_std_', None) is None or getattr(self, '_x_mean_', None) is None:
             self._x_mean_ = x.mean(axis=0)
@@ -69,10 +67,10 @@ class BaseStatModel:
 
 
     def pre_processing_x(self, x):
-        return x
+        raise NotImplementedError
 
     def pre_processing_y(self, y):
-        return y
+        raise NotImplementedError
 
     def pre_processing(self):
         self.train_x = self.pre_processing_x(self.train_x)

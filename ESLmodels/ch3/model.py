@@ -6,6 +6,10 @@ from itertools import combinations
 
 
 class LinearModel(BaseStatModel):
+    def __init__(self, train_x, train_y, features_name=None):
+        super().__init__(train_x, train_y, features_name)
+        self.beta_hat = None
+
     def pre_processing_x(self, x):
         x = self.standardize(x)
         return x
