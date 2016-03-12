@@ -155,7 +155,7 @@ class RidgeModel(LinearModel):
     @property
     @lazy_method
     def df(self):
-        u, d, vt = self.math.svd(self._raw_train_x)
+        u, d, vt = self.math.svd(self.train_x)
         return self.math.sum(d**2/(d**2 + self.alpha))
 
 

@@ -84,31 +84,32 @@ def test_ridge(prostate_data):
     from sklearn.preprocessing import scale
     from sklearn.linear_model import RidgeCV, ridge_regression
 
-    # als=[(i/100) for i in range(1, 10000)]
-    # rcv = RidgeCV(alphas=als, solver='svd')
-    # rcv.fit(scale(train_x), train_y)
+    # als=[(i/100) for i in range(1, 1000)]
+    # rcv = RidgeCV(alphas=[22.78])
+    # rcv.fit(std(train_x), train_y)
     # print(rcv.alpha_)
     # print(rcv.intercept_, rcv.coef_)
-    # print('te',np.mean((rcv.predict(scale(test_x)) -test_y)**2))
+    # print('te',np.mean((rcv.predict(std(test_x)) -test_y)**2))
 
-    # min_df = 99999999999999999
-    # best_alpha = None
-    # for i in range(1, 1000):
-    #     alpha = i/100
-    #     r = RidgeModel(train_x=train_x, train_y=train_y, alpha=alpha, solve='svd')
-    #     r.pre_processing()
-    #     r.train()
-    #     if abs(r.df - 7) < min_df:
-    #         best_alpha = alpha
-    #         min_df = r.df - 7
+    target_df = 5
+    min_df = 99999999999999999
+    best_alpha = None
+    for i in range(1, 5000):
+        alpha = i/200
+        r = RidgeModel(train_x=train_x, train_y=train_y, alpha=alpha, solve='svd')
+        r.pre_processing()
+        r.train()
+        if abs(r.df - target_df) < min_df:
+            best_alpha = alpha
+            min_df = r.df - target_df
 
-    r = RidgeModel(train_x=train_x, train_y=train_y, alpha=4, solve='svd')
+    r = RidgeModel(train_x=train_x, train_y=train_y, alpha=best_alpha, solve='raw')
     r.pre_processing()
     r.train()
-    print(ridge_regression(scale(train_x), train_y, alpha=4, solver='svd'))
+    # print(ridge_regression(r.standardize(train_x), train_y, alpha=best_alpha, solver='auto'))
 
-    # print('df', r.df)
-    # print('alpha', r.alpha)
+    print('df', r.df)
+    print('alpha', r.alpha)
     # print('rss', min_df, r.rss)
     print(r.test(test_x, test_y).mse)
     # print(skr.pred)
