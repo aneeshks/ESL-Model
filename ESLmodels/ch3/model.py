@@ -15,7 +15,7 @@ class LinearModel(BaseStatModel):
         return x
 
     def pre_processing_y(self, y):
-        return y
+        return y.reshape(y.size,1)
 
     def predict(self, x):
         x = self.pre_processing_x(x)
@@ -152,7 +152,7 @@ class RidgeModel(LinearModel):
             raise NotImplementedError
 
         self.intercept = np.mean(y)
-        self.beta_hat = np.insert(self.beta_hat, 0, self.intercept)
+        self.beta_hat = np.insert(self.beta_hat, 0, self.intercept, axis=0)
 
     def predict(self, x):
         x = self.pre_processing_x(x)

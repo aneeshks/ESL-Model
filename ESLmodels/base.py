@@ -84,6 +84,7 @@ class BaseStatModel:
 
     def test(self, x, y):
         y_hat = self.predict(x)
+        y = self.pre_processing_y(y)
         return Result(y_hat, y)
 
     @property
