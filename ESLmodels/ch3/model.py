@@ -166,16 +166,18 @@ class RidgeModel(LinearModel):
         return self.math.sum(d**2/(d**2 + self.alpha))
 
 
-class LassoLARModel(LinearModel):
+class _LassoLARModel(LinearModel):
     def __init__(self, *args, **kwargs):
         self.alpha = kwargs.pop('alpha', 1)
         super().__init__(*args, **kwargs)
 
     def train(self):
-        def max_cor_index(X, y):
-            corr = np.corrcoef(X, y, rowvar=0, ddof=1)[:-1, -1]
-            print('coor:', corr.shape)
-            return corr.argmax()
+        def max_cor_index(X, y, return_corr=False):
+            corr = np.abs(np.corrcoef(X, y, rowvar=0, ddof=1)[:-1, -1])
+            if return_corr:
+                return corr.argmax(), corr
+            else:
+                return corr.argmax()
 
         X = self.train_x
         y = self.train_y
@@ -187,9 +189,9 @@ class LassoLARModel(LinearModel):
         i = 0
         while True:
             # find max correlation beta_j
-            print('r', r.shape)
-            j = max_cor_index(X, r)
+            j, corr= max_cor_index(X, r, return_corr=True)
             print('j:', j)
+            print('corr', corr)
             self.active = np.append(self.active, j)
             # a_beta = np.append(a_beta, beta[j])
             if a_beta.size:
@@ -199,11 +201,7 @@ class LassoLARModel(LinearModel):
 
             # update
             Xak = X[:, self.active]
-            print('Xak', Xak.shape)
-            print('a beta shape', a_beta.shape)
             r = y - Xak@a_beta
-            print('xak@a_beta', (Xak@a_beta).shape)
-            print('r.shape', r.shape)
             sita = np.linalg.pinv(Xak.T @ Xak, rcond=0) @ Xak.T @ r
             print('sita', sita.shape)
             a_beta = a_beta + sita * self.alpha
@@ -231,7 +229,7 @@ class LassoLARModel(LinearModel):
 
 
 
-def lars_path(X, y, alpha=0.3, a_beta=None, active=None, r=None):
+def _lars_path(X, y, alpha=0.3, a_beta=None, active=None, r=None):
     beta = np.zeros((X.shape[1], 1))
     # active beta set
     a_beta = a_beta if a_beta is not None else np.array([])

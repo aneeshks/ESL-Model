@@ -1,8 +1,7 @@
-from ESLmodels.ch3.model import LeastSquareModel
 import pytest
 from .utils import read_data
 import os
-from ESLmodels.base import np
+import numpy as np
 
 @pytest.fixture
 def data():
@@ -30,6 +29,7 @@ def prostate_data(data):
 
 
 def _test_least_square_model(prostate_data):
+    from ESLmodels.ch3.model import LeastSquareModel
     train_x, train_y, features, test_x, test_y = prostate_data
     lsm = LeastSquareModel(train_x=train_x, train_y=train_y, features_name=features)
     lsm.pre_processing()
@@ -118,7 +118,7 @@ def _test_ridge(prostate_data):
     assert float('{:.3f}'.format(test_error)) == 0.492
 
 
-def test_lars_lasso(prostate_data):
+def _test_lars_lasso(prostate_data):
     train_x, train_y, features, test_x, test_y = prostate_data
 
     from sklearn.linear_model.least_angle import LassoLars
@@ -127,7 +127,7 @@ def test_lars_lasso(prostate_data):
     std_train_x = (train_x - train_x.mean(axis=0)) / train_x.std(axis=0, ddof=1)
 
     alpha = 0.3
-    larl = LassoLars(alpha=alpha, verbose=True)
+    larl = LassoLars(alpha=alpha, verbose=2)
 
     larl.fit(std_train_x, train_y)
 
@@ -135,11 +135,11 @@ def test_lars_lasso(prostate_data):
     # print(larl.active_)
     # print(larl.intercept_, larl.coef_)
 
-    from ESLmodels.ch3.model import LassoLARModel
-    lar = LassoLARModel(train_x=train_x, train_y=train_y, alpha=alpha)
-    lar.pre_processing()
-    lar.train()
-    print('lar', lar.beta_hat)
-    print(' lar act', lar.active)
+    # from ESLmodels.ch3.model import LassoLARModel
+    # lar = LassoLARModel(train_x=train_x, train_y=train_y, alpha=alpha)
+    # lar.pre_processing()
+    # lar.train()
+    # print('lar', lar.beta_hat)
+    # print(' lar act', lar.active)
 
     assert  0
