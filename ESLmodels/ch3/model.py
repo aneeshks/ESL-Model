@@ -227,6 +227,37 @@ class _LassoLARModel(LinearModel):
         return x @ self.beta_hat
 
 
+class PrincipalComponentsRegression(LinearModel):
+    def __init__(self, *args, **kwargs):
+        m = kwargs.pop('m', None)
+        super().__init__(*args, **kwargs)
+        self.m = m or self.p
+
+    def transform_z(self, X):
+        U, D, Vt = self.math.svd(X, full_matrices=False)
+        return X @ Vt.T[:,:self.m], U, D, Vt
+
+
+    def train(self):
+        X = self.train_x
+        y = self.train_y
+
+        Z, U, D, Vt = self.transform_z(X)
+
+        theta = self.math.inv(Z.T @ Z) @ (Z.T @ y)
+
+        beta = Vt.T[:,:self.m] @ theta
+
+        self.intercept = np.mean(y)
+        self.beta_hat = np.insert(beta, 0, self.intercept, axis=0)
+
+    def predict(self, x):
+        x = self.pre_processing_x(x)
+        x = np.insert(x, 0, 1, axis=1)
+        return x @ self.beta_hat
+
+
+
 
 
 def _lars_path(X, y, alpha=0.3, a_beta=None, active=None, r=None):

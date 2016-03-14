@@ -1,7 +1,10 @@
 import pytest
-from .utils import read_data
+from .utils import read_data, digit_float
 import os
 import numpy as np
+
+
+
 
 @pytest.fixture
 def data():
@@ -143,3 +146,16 @@ def _test_lars_lasso(prostate_data):
     # print(' lar act', lar.active)
 
     assert  0
+
+def test_PCR(prostate_data):
+    train_x, train_y, features, test_x, test_y = prostate_data
+    from ESLmodels.ch3.model import PrincipalComponentsRegression
+    # page 80 says m=7
+    pcr = PrincipalComponentsRegression(train_x=train_x, train_y=train_y, m=7)
+    pcr.pre_processing()
+    pcr.train()
+    print('beta hat', pcr.beta_hat)
+    test_err = pcr.test(test_x, test_y).mse
+    print('test error:', test_err)
+
+    assert digit_float(test_err) == 0.448
