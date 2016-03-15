@@ -31,7 +31,7 @@ def prostate_data(data):
     return train_x.values, train_y.values, features, test_x.values, test_y.values
 
 
-def _test_least_square_model(prostate_data):
+def test_least_square_model(prostate_data):
     from ESLmodels.ch3.model import LeastSquareModel
     train_x, train_y, features, test_x, test_y = prostate_data
     lsm = LeastSquareModel(train_x=train_x, train_y=train_y, features_name=features)
@@ -62,8 +62,9 @@ def _test_least_square_model(prostate_data):
     assert np.isclose(result.mse, np.mean(((lr.predict(test_x)) - test_y) **2))
 
 
-def _test_best_select(prostate_data):
+def test_best_select(prostate_data):
     from ESLmodels.ch3.model import BestSubsetSelection
+    from ESLmodels.ch3.model import LeastSquareModel
     train_x, train_y, features, test_x, test_y = prostate_data
     bss = BestSubsetSelection(train_x=train_x, train_y=train_y, k=2, features_name=features)
     bss.pre_processing()
@@ -81,7 +82,7 @@ def _test_best_select(prostate_data):
     # print('gg', sum((bss.pre_processing_x(train_x) @ lsm.beta_hat)**2))
     # assert  0
 
-def _test_ridge(prostate_data):
+def test_ridge(prostate_data):
     from ESLmodels.ch3.model import RidgeModel
     train_x, train_y, features, test_x, test_y = prostate_data
     from sklearn.preprocessing import StandardScaler
@@ -147,7 +148,7 @@ def _test_lars_lasso(prostate_data):
 
     assert  0
 
-def _test_PCR(prostate_data):
+def test_PCR(prostate_data):
     train_x, train_y, features, test_x, test_y = prostate_data
     from ESLmodels.ch3.model import PrincipalComponentsRegression
     # page 80 says m=7
@@ -161,7 +162,7 @@ def _test_PCR(prostate_data):
     assert digit_float(test_err) == 0.448
 
 
-def _test_PLS(prostate_data):
+def test_PLS(prostate_data):
     train_x, train_y, features, test_x, test_y = prostate_data
     from ESLmodels.ch3.model import PartialLeastSquare
     pls = PartialLeastSquare(train_x=train_x, train_y=train_y, M=2)
