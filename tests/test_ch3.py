@@ -6,34 +6,22 @@ import numpy as np
 
 
 
-@pytest.fixture
-def data():
-    DIR = os.path.dirname(__file__)
-    filename = os.path.join(DIR, 'data/prostate.txt')
-    prostate_data = read_data(filename)
-    prostate_data.drop(prostate_data.columns[0], axis=1, inplace=True)
-    return prostate_data
+
 
 
 @pytest.fixture
-def prostate_data(data):
+def prostate_data():
+    from ESLmodels.datasets import ProstateDataSet
 
-    train_data = data[data.train == 'T'].drop('train', axis=1)
-    test_data = data[data.train == 'F'].drop('train', axis=1)
+    p = ProstateDataSet()
+    return p.return_all()
 
-    train_y = train_data.pop('lpsa')
-    train_x = train_data.copy()
 
-    test_y = test_data.pop('lpsa')
-    test_x = test_data.copy()
-
-    features = list(train_x.columns)
-    return train_x.values, train_y.values, features, test_x.values, test_y.values
 
 
 def test_least_square_model(prostate_data):
     from ESLmodels.ch3.model import LeastSquareModel
-    train_x, train_y, features, test_x, test_y = prostate_data
+    train_x, train_y, test_x, test_y, features = prostate_data
     lsm = LeastSquareModel(train_x=train_x, train_y=train_y, features_name=features)
     lsm.pre_processing()
 
@@ -65,7 +53,7 @@ def test_least_square_model(prostate_data):
 def test_best_select(prostate_data):
     from ESLmodels.ch3.model import BestSubsetSelection
     from ESLmodels.ch3.model import LeastSquareModel
-    train_x, train_y, features, test_x, test_y = prostate_data
+    train_x, train_y, test_x, test_y, features = prostate_data
     bss = BestSubsetSelection(train_x=train_x, train_y=train_y, k=2, features_name=features)
     bss.pre_processing()
     bss.train()
@@ -84,7 +72,7 @@ def test_best_select(prostate_data):
 
 def test_ridge(prostate_data):
     from ESLmodels.ch3.model import RidgeModel
-    train_x, train_y, features, test_x, test_y = prostate_data
+    train_x, train_y, test_x, test_y, features = prostate_data
     from sklearn.preprocessing import StandardScaler
     from sklearn.linear_model import RidgeCV, ridge_regression
 
@@ -123,7 +111,7 @@ def test_ridge(prostate_data):
 
 
 def _test_lars_lasso(prostate_data):
-    train_x, train_y, features, test_x, test_y = prostate_data
+    train_x, train_y, test_x, test_y, features = prostate_data
 
     from sklearn.linear_model.least_angle import LassoLars
     from sklearn.preprocessing import StandardScaler
@@ -149,7 +137,7 @@ def _test_lars_lasso(prostate_data):
     assert  0
 
 def test_PCR(prostate_data):
-    train_x, train_y, features, test_x, test_y = prostate_data
+    train_x, train_y, test_x, test_y, features = prostate_data
     from ESLmodels.ch3.model import PrincipalComponentsRegression
     # page 80 says m=7
     pcr = PrincipalComponentsRegression(train_x=train_x, train_y=train_y, m=7)
@@ -163,7 +151,7 @@ def test_PCR(prostate_data):
 
 
 def test_PLS(prostate_data):
-    train_x, train_y, features, test_x, test_y = prostate_data
+    train_x, train_y, test_x, test_y, features = prostate_data
     from ESLmodels.ch3.model import PartialLeastSquare
     pls = PartialLeastSquare(train_x=train_x, train_y=train_y, M=2)
     pls.pre_processing()
@@ -173,3 +161,8 @@ def test_PLS(prostate_data):
     print('te', te)
     assert digit_float(te) == 0.536
 
+
+def test_datasets():
+    from ESLmodels.datasets import ProstateDataSet
+    p = ProstateDataSet()
+    print(p.test_y)
