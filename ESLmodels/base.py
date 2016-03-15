@@ -9,6 +9,7 @@ class MathCollection:
         self.inv = linalg.inv
         self.sum = np.sum
         self.svd = svd
+        self.pinv = linalg.pinv
 
     def __repr__(self):
         return 'Math Collection'

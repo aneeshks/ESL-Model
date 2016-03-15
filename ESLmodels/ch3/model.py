@@ -257,6 +257,45 @@ class PrincipalComponentsRegression(LinearModel):
         return x @ self.beta_hat
 
 
+class PartialLeastSquare(LinearModel):
+    def __init__(self, *args, M=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.M = M or self.p
+
+    def train(self):
+        X = self.train_x
+        y = self.train_y
+
+        y_hat = [np.zeros((self.N, 1)) for i in range(self.M + 1)]
+        x = [np.zeros((self.N, self.p)) for i in range(self.M + 1)]
+        # Page 81 1st step
+        y_hat[0][...] = np.mean(y)
+        x[0] = X
+
+        # 2nd step
+        for m in range(1, self.M + 1):
+            psi = x[m-1].T @ y
+            z_m = x[m-1] @ psi
+            theta_m = self.math.pinv(z_m.T @ z_m) @ (z_m.T @ y)
+            y_hat[m][...] = y_hat[m-1] + z_m @ theta_m
+            x[m][...] = x[m-1] - z_m @ (self.math.pinv(z_m.T @ z_m) @ (z_m.T @ x[m-1]))
+
+        self.intercept = np.mean(y)
+        beta = self.math.pinv(X) @ (y_hat[self.M] - self.intercept )
+        self.beta_hat = np.insert(beta, 0, self.intercept, axis=0)
+        self._y_hat = y_hat[self.M]
+
+
+    @property
+    def y_hat(self):
+        return self._y_hat
+
+    def predict(self, x):
+        x = self.pre_processing_x(x)
+        x = np.insert(x, 0, 1, axis=1)
+        return x @ self.beta_hat
+
+
 
 
 

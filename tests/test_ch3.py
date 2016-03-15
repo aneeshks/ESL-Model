@@ -147,7 +147,7 @@ def _test_lars_lasso(prostate_data):
 
     assert  0
 
-def test_PCR(prostate_data):
+def _test_PCR(prostate_data):
     train_x, train_y, features, test_x, test_y = prostate_data
     from ESLmodels.ch3.model import PrincipalComponentsRegression
     # page 80 says m=7
@@ -159,3 +159,16 @@ def test_PCR(prostate_data):
     print('test error:', test_err)
 
     assert digit_float(test_err) == 0.448
+
+
+def _test_PLS(prostate_data):
+    train_x, train_y, features, test_x, test_y = prostate_data
+    from ESLmodels.ch3.model import PartialLeastSquare
+    pls = PartialLeastSquare(train_x=train_x, train_y=train_y, M=2)
+    pls.pre_processing()
+    pls.train()
+    print(pls.beta_hat)
+    te = pls.test(test_x, test_y).mse
+    print('te', te)
+    assert digit_float(te) == 0.536
+
