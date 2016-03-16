@@ -49,6 +49,10 @@ class LinearModel(BaseStatModel):
         return self.beta_hat / self.std_err
 
 
+    @property
+    @lazy_method
+    def y_hat(self):
+        return self.predict(self._raw_train_x)
 
     def F_statistic(self, remove_cols):
         """

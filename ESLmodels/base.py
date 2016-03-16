@@ -90,11 +90,6 @@ class BaseStatModel:
         y = self.pre_processing_y(y)
         return Result(y_hat, y)
 
-    @property
-    @lazy_method
-    def y_hat(self):
-        return self.predict(self._raw_train_x)
-
 
     @property
     def math(self):
