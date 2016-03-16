@@ -20,7 +20,7 @@ class LinearModel(BaseStatModel):
 
     def predict(self, x):
         x = self.pre_processing_x(x)
-        x = np.insert(x, 0, 1, axis=0)
+        x = np.insert(x, 0, 1, axis=1)
         return  x @ self.beta_hat
 
     @property
