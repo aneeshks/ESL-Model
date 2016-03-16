@@ -142,3 +142,17 @@ def test_datasets():
     from ESLmodels.datasets import ProstateDataSet
     p = ProstateDataSet()
     print(p.test_y)
+
+
+def test_ISFR(prostate_data):
+    from ESLmodels.ch3.model import IFSRModel
+    train_x, train_y, test_x, test_y, features = prostate_data
+
+    ifsr = IFSRModel(train_x=train_x, train_y=train_y)
+    ifsr.pre_processing()
+    ifsr.train()
+    print(ifsr.beta_hat)
+    te = ifsr.test(test_x, test_y).mse
+    print('te', te)
+
+    assert digit_float(te) == 0.452

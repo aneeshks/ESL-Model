@@ -240,3 +240,58 @@ class PartialLeastSquare(LinearModel):
     @property
     def y_hat(self):
         return self._y_hat
+
+
+class IFSRModel(LinearModel):
+    """
+    Algorithm 3.4 on page 86, without LAR. Well, I still do not know how to write LAR.
+    I also reference http://waxworksmath.com/Authors/G_M/Hastie/WriteUp/weatherwax_epstein_hastie_solutions_manual.pdf
+    """
+
+    def __init__(self, *args, epsilon='auto', iter_max=5000, cor_threshold=1e-6, **kwargs):
+        self.iter_max = iter_max
+        self.epsilon = epsilon
+        self.cor_threshold = cor_threshold
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def max_correlation_index(x, y):
+        cor = np.corrcoef(x, y, rowvar=0)[:-1, -1]
+        j = np.abs(cor).argmax()
+        max_cor = cor[j]
+        return j, max_cor
+
+
+    def train(self):
+        X = self.train_x
+        y = self.train_y
+        r = y.copy()
+        beta = np.zeros((self.p, 1))
+        iter_time = 0
+
+        if self.epsilon == 'auto':
+            # ref:  http://waxworksmath.com/Authors/G_M/Hastie/WriteUp/weatherwax_epstein_hastie_solutions_manual.pdf
+            #       page 30
+
+            beta_ls_sum  = np.sum(np.abs(self.math.pinv(X.T @ X) @ X.T @ y))
+            epsilon = beta_ls_sum / (2 * self.iter_max)
+        else:
+            epsilon = self.epsilon
+
+        while True:
+            j, max_cor = self.max_correlation_index(X, r)
+            xj = X[:,[j]]
+            theta = np.sign(xj.T @ r ) * epsilon
+            r -= xj @ theta
+            beta[j] = beta[j] + theta
+
+            iter_time += 1
+
+            if iter_time > self.iter_max or max_cor < self.cor_threshold:
+                break
+
+            self.intercept = np.mean(y)
+            self.beta_hat = np.insert(beta, 0, self.intercept, axis=0)
+
+
+
