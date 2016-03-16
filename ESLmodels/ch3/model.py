@@ -169,65 +169,13 @@ class RidgeModel(LinearModel):
         return self.math.sum(d**2/(d**2 + self.alpha))
 
 
-class _LassoLARModel(LinearModel):
+class LassoLARModel:
+    WARN = "I was unable to write out this algorithm from book page 74, " \
+           "if anyone understand it , please let me know"
+
     def __init__(self, *args, **kwargs):
-        self.alpha = kwargs.pop('alpha', 1)
-        super().__init__(*args, **kwargs)
+        raise NotImplementedError(self.WARN)
 
-    def train(self):
-        def max_cor_index(X, y, return_corr=False):
-            corr = np.abs(np.corrcoef(X, y, rowvar=0, ddof=1)[:-1, -1])
-            if return_corr:
-                return corr.argmax(), corr
-            else:
-                return corr.argmax()
-
-        X = self.train_x
-        y = self.train_y
-        beta = np.zeros((self.p, 1))
-        # active beta set
-        a_beta = np.array([])
-        r = y - np.mean(y)
-        self.active = np.array([], dtype=int)
-        i = 0
-        while True:
-            # find max correlation beta_j
-            j, corr= max_cor_index(X, r, return_corr=True)
-            print('j:', j)
-            print('corr', corr)
-            self.active = np.append(self.active, j)
-            # a_beta = np.append(a_beta, beta[j])
-            if a_beta.size:
-                a_beta = np.append(a_beta, [beta[j]], axis=0)
-            else:
-                a_beta = np.array([beta[j]])
-
-            # update
-            Xak = X[:, self.active]
-            r = y - Xak@a_beta
-            sita = np.linalg.pinv(Xak.T @ Xak, rcond=0) @ Xak.T @ r
-            print('sita', sita.shape)
-            a_beta = a_beta + sita * self.alpha
-            print('a_beta', a_beta.shape)
-            zeros = np.where(a_beta == 0)
-            # if zeros:
-            #     a_beta = np.delete(a_beta, zeros)
-            #     self.active = np.delete(self.active, zeros)
-            #     Xak = X[:, self.active]
-            #     sita = (np.linalg.pinv(Xak.T @ Xak) @ Xak.T @ r)
-            #     a_beta = a_beta + sita * self.alpha
-
-            i += 1
-            if len(self.active) >= self.p or i>500:
-                break
-
-        intercept = np.mean(y)
-        self.beta_hat = np.insert(a_beta, 0, intercept)
-
-    def predict(self, x):
-        x = self.pre_processing_x(x)
-        x = np.insert(x, 0, 1, axis=1)
-        return x @ self.beta_hat
 
 
 class PrincipalComponentsRegression(LinearModel):
@@ -288,46 +236,3 @@ class PartialLeastSquare(LinearModel):
     @property
     def y_hat(self):
         return self._y_hat
-
-
-
-
-
-
-def _lars_path(X, y, alpha=0.3, a_beta=None, active=None, r=None):
-    beta = np.zeros((X.shape[1], 1))
-    # active beta set
-    a_beta = a_beta if a_beta is not None else np.array([])
-    r = r if r is not None  else ( y - np.mean(y))
-    active = active if active is not None else np.array([], dtype=int)
-    i = 0
-        # find max correlation beta_j
-
-    corr = np.abs(np.corrcoef(X, r, rowvar=0, ddof=1)[:-1, -1])
-    j = corr.argmax()
-    active = np.append(active, j)
-    if a_beta.size:
-        a_beta = np.append(a_beta, [beta[j]], axis=0)
-    else:
-        a_beta = np.array([beta[j]])
-
-    # update
-    Xak = X[:, active]
-    while True:
-        r = y - Xak@a_beta
-        sita = (np.linalg.pinv(Xak.T @ Xak) @ Xak.T @ r)
-        a_beta = a_beta + sita * alpha
-        corr = np.abs(np.corrcoef(X, r, rowvar=0, ddof=1)[:-1, -1])
-        k = corr.argmax()
-        if k!=j:
-            break
-
-    print('a_beta', a_beta)
-    # if zeros:
-    #     a_beta = np.delete(a_beta, zeros)
-    #     self.active = np.delete(self.active, zeros)
-    #     Xak = X[:, self.active]
-    #     sita = (np.linalg.pinv(Xak.T @ Xak) @ Xak.T @ r)
-    #     a_beta = a_beta + sita * self.alpha
-
-    return a_beta, active, r

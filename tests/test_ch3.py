@@ -110,31 +110,7 @@ def test_ridge(prostate_data):
     assert float('{:.3f}'.format(test_error)) == 0.492
 
 
-def _test_lars_lasso(prostate_data):
-    train_x, train_y, test_x, test_y, features = prostate_data
 
-    from sklearn.linear_model.least_angle import LassoLars
-    from sklearn.preprocessing import StandardScaler
-
-    std_train_x = (train_x - train_x.mean(axis=0)) / train_x.std(axis=0, ddof=1)
-
-    alpha = 0.3
-    larl = LassoLars(alpha=alpha, verbose=2)
-
-    larl.fit(std_train_x, train_y)
-
-    # print(larl.alphas_)
-    # print(larl.active_)
-    # print(larl.intercept_, larl.coef_)
-
-    # from ESLmodels.ch3.model import LassoLARModel
-    # lar = LassoLARModel(train_x=train_x, train_y=train_y, alpha=alpha)
-    # lar.pre_processing()
-    # lar.train()
-    # print('lar', lar.beta_hat)
-    # print(' lar act', lar.active)
-
-    assert  0
 
 def test_PCR(prostate_data):
     train_x, train_y, test_x, test_y, features = prostate_data

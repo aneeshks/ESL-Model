@@ -56,6 +56,8 @@ class BaseStatModel:
 
     @property
     def N(self):
+        """number of N sample"""
+
         return self._raw_train_x.shape[0]
 
     @property
