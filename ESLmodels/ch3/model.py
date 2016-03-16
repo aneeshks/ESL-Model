@@ -9,6 +9,7 @@ class LinearModel(BaseStatModel):
     def __init__(self, train_x, train_y, features_name=None):
         super().__init__(train_x, train_y, features_name)
         self.beta_hat = None
+        self.intercept = None
 
     def pre_processing_x(self, x):
         x = self.standardize(x)
@@ -19,8 +20,8 @@ class LinearModel(BaseStatModel):
 
     def predict(self, x):
         x = self.pre_processing_x(x)
+        x = np.insert(x, 0, 1, axis=0)
         return  x @ self.beta_hat
-
 
     @property
     @lazy_method
@@ -93,6 +94,9 @@ class LeastSquareModel(LinearModel):
         y = self.train_y
         self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
 
+    def predict(self, x):
+        x = self.pre_processing_x(x)
+        return x @ self.beta_hat
 
 
 class BestSubsetSelection(LinearModel):
@@ -126,6 +130,9 @@ class BestSubsetSelection(LinearModel):
                 self.beta_hat = beta_hat
                 rss_min = rss
 
+    def predict(self, x):
+        x = self.pre_processing_x(x)
+        return x @ self.beta_hat
 
 
 
@@ -154,10 +161,6 @@ class RidgeModel(LinearModel):
         self.intercept = np.mean(y)
         self.beta_hat = np.insert(self.beta_hat, 0, self.intercept, axis=0)
 
-    def predict(self, x):
-        x = self.pre_processing_x(x)
-        x = np.insert(x, 0, 1, axis=1)
-        return x @ self.beta_hat
 
     @property
     @lazy_method
@@ -251,10 +254,6 @@ class PrincipalComponentsRegression(LinearModel):
         self.intercept = np.mean(y)
         self.beta_hat = np.insert(beta, 0, self.intercept, axis=0)
 
-    def predict(self, x):
-        x = self.pre_processing_x(x)
-        x = np.insert(x, 0, 1, axis=1)
-        return x @ self.beta_hat
 
 
 class PartialLeastSquare(LinearModel):
@@ -290,10 +289,6 @@ class PartialLeastSquare(LinearModel):
     def y_hat(self):
         return self._y_hat
 
-    def predict(self, x):
-        x = self.pre_processing_x(x)
-        x = np.insert(x, 0, 1, axis=1)
-        return x @ self.beta_hat
 
 
 
