@@ -23,11 +23,26 @@ class Result:
     def __init__(self, y_hat:np.ndarray, y:np.ndarray):
         self.y_hat = y_hat
         self.y = y
+        self.prediction_error = np.power(self.y_hat - self.y, 2)
+        self.N = y.shape[0]
 
     @property
     @lazy_method
     def mse(self):
-        return mathcollection.sum((self.y - self.y_hat)**2)/ self.y.shape[0]
+        """
+        mean of prediction error
+        :return:
+        """
+        return mathcollection.sum(self.prediction_error)/ self.N
+
+    @property
+    @lazy_method
+    def std_error(self):
+        """
+        Standard Error of prediction error
+        :return:
+        """
+        return (np.var(self.prediction_error, ddof=1) / self.N)**0.5
 
     @lazy_method
     def z_score(self):

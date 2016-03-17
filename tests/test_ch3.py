@@ -47,6 +47,7 @@ def test_least_square_model(prostate_data):
     lr = LinearRegression()
 
     lr.fit(train_x, train_y)
+    print('std error', result.std_error)
     assert np.isclose(result.mse, np.mean(((lr.predict(test_x)) - test_y) **2))
 
 
@@ -61,14 +62,14 @@ def test_best_select(prostate_data):
     print('cof', bss.beta_hat)
     print('rss:', bss.rss)
     print('test err', bss.test(test_x, test_y).mse)
+    print('std error', bss.test(test_x, test_y).std_error)
     lsm = LeastSquareModel(train_x=train_x[:,:2], train_y=train_y, features_name=features)
     lsm.pre_processing()
 
     lsm.train()
 
     assert lsm.rss == bss.rss
-    # print('gg', sum((bss.pre_processing_x(train_x) @ lsm.beta_hat)**2))
-    # assert  0
+
 
 def test_ridge(prostate_data):
     from ESLmodels.ch3.model import RidgeModel
@@ -106,9 +107,8 @@ def test_ridge(prostate_data):
     test_error = r.test(test_x, test_y).mse
     print(test_error)
     print(r.beta_hat)
-
+    print(r.test(test_x, test_y).std_error)
     assert float('{:.3f}'.format(test_error)) == 0.492
-
 
 
 
