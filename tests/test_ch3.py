@@ -10,7 +10,7 @@ import numpy as np
 
 @pytest.fixture
 def prostate_data():
-    from ESLmodels.datasets import ProstateDataSet
+    from esl_model.datasets import ProstateDataSet
 
     p = ProstateDataSet()
     return p.return_all()
@@ -19,7 +19,7 @@ def prostate_data():
 
 
 def test_least_square_model(prostate_data):
-    from ESLmodels.ch3.model import LeastSquareModel
+    from esl_model.ch3.model import LeastSquareModel
     train_x, train_y, test_x, test_y, features = prostate_data
     lsm = LeastSquareModel(train_x=train_x, train_y=train_y, features_name=features)
     lsm.pre_processing()
@@ -45,8 +45,8 @@ def test_least_square_model(prostate_data):
 
 
 def test_best_select(prostate_data):
-    from ESLmodels.ch3.model import BestSubsetSelection
-    from ESLmodels.ch3.model import LeastSquareModel
+    from esl_model.ch3.model import BestSubsetSelection
+    from esl_model.ch3.model import LeastSquareModel
     train_x, train_y, test_x, test_y, features = prostate_data
     bss = BestSubsetSelection(train_x=train_x, train_y=train_y, k=2, features_name=features)
     bss.pre_processing()
@@ -65,7 +65,7 @@ def test_best_select(prostate_data):
 
 
 def test_ridge(prostate_data):
-    from ESLmodels.ch3.model import RidgeModel
+    from esl_model.ch3.model import RidgeModel
     train_x, train_y, test_x, test_y, features = prostate_data
     from sklearn.preprocessing import StandardScaler
     from sklearn.linear_model import RidgeCV, ridge_regression
@@ -107,7 +107,7 @@ def test_ridge(prostate_data):
 
 def test_PCR(prostate_data):
     train_x, train_y, test_x, test_y, features = prostate_data
-    from ESLmodels.ch3.model import PrincipalComponentsRegression
+    from esl_model.ch3.model import PrincipalComponentsRegression
     # page 80 says m=7
     pcr = PrincipalComponentsRegression(train_x=train_x, train_y=train_y, m=7)
     pcr.pre_processing()
@@ -121,7 +121,7 @@ def test_PCR(prostate_data):
 
 def test_PLS(prostate_data):
     train_x, train_y, test_x, test_y, features = prostate_data
-    from ESLmodels.ch3.model import PartialLeastSquare
+    from esl_model.ch3.model import PartialLeastSquare
     pls = PartialLeastSquare(train_x=train_x, train_y=train_y, M=2)
     pls.pre_processing()
     pls.train()
@@ -133,7 +133,7 @@ def test_PLS(prostate_data):
 
 
 def test_ISFR(prostate_data):
-    from ESLmodels.ch3.model import IFSRModel
+    from esl_model.ch3.model import IFSRModel
     train_x, train_y, test_x, test_y, features = prostate_data
 
     ifsr = IFSRModel(train_x=train_x, train_y=train_y)

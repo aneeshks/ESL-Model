@@ -1,6 +1,6 @@
-from ESLmodels.base import BaseStatModel
-from ESLmodels.base import np
-from ESLmodels.utils import lazy_method
+from ..base import BaseStatModel
+from ..base import np
+from ..utils import lazy_method
 from itertools import combinations
 
 
