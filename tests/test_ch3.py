@@ -1,6 +1,5 @@
 import pytest
-from .utils import read_data, digit_float
-import os
+from .utils import digit_float
 import numpy as np
 
 
@@ -29,12 +28,6 @@ def test_least_square_model(prostate_data):
 
     print(lsm.beta_hat)
     print('rss:',lsm.rss)
-    # nx = np.delete(train_x, [2,5,6,7], axis=1)
-
-    # other = LeastSquareModel(train_x=nx, train_y=train_y)
-    # other.pre_processing()
-    # other.train()
-    # print('rss other:', other.rss)
     print('F-statistic', lsm.F_statistic(remove_cols=['age', 'lcp', 'gleason', 'pgg45']))
     print('z-score', lsm.z_score)
 
