@@ -138,11 +138,6 @@ def test_PLS(prostate_data):
     assert digit_float(te) == 0.536
 
 
-def test_datasets():
-    from ESLmodels.datasets import ProstateDataSet
-    p = ProstateDataSet()
-    print(p.test_y)
-
 
 def test_ISFR(prostate_data):
     from ESLmodels.ch3.model import IFSRModel
