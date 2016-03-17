@@ -57,7 +57,8 @@ class Result:
 class BaseStatModel:
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray, features_name=None):
-        self.train_x =  self._raw_train_x = train_x
+        self.train_x = train_x
+        self._raw_train_x = train_x.copy()
         self.train_y = train_y
         self.features_name = features_name
 
