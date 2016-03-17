@@ -68,7 +68,7 @@ def test_best_select(prostate_data):
 
     lsm.train()
 
-    assert lsm.rss == bss.rss
+    assert np.isclose(lsm.rss, bss.rss)
 
 
 def test_ridge(prostate_data):
