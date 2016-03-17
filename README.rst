@@ -42,6 +42,6 @@ To run the code, you must install python > 3.5, because I use ``@`` operate inst
 
 Reference
 -----------
-- Elements of Statistical Learning 2nd Edition
+- The Elements of Statistical Learning 2nd Edition
 
 - http://waxworksmath.com/Authors/G_M/Hastie/WriteUp/weatherwax_epstein_hastie_solutions_manual.pdf
