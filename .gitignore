@@ -2,7 +2,10 @@
 .cache/
 
 *.py[cd]
+/*.egg-info
+/*.egg
 
 .DS_Store
 
+/dist/
 
