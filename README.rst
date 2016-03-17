@@ -5,9 +5,9 @@ Algorithm from The Elements of Statistical Learning book implement by Python 3 c
 
 Until now, I finish chapter 3.
 
-The Algorithm model is placed in `esl_model.chx.model`, `x` means the number of chapter, for example,  `esl_model.ch3.model` 
+The Algorithm model is placed in ``esl_model.chx.model``, ``x`` means the number of chapter, for example,  ``esl_model.ch3.model`` 
 
-To run the code, you must install python > 3.5, because I use `@` operate instead of `numpy.dot`
+To run the code, you must install python > 3.5, because I use ``@`` operate instead of ``numpy.dot``
 
 
 .. code-block:: python
