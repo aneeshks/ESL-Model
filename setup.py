@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst', 'r', encoding='utf8') as f:
     readme = f.read()
@@ -22,7 +22,7 @@ setup(name='esl_model',
       author='littlezz',
       author_email='zz.at.field@gmail.com',
       license='MIT',
-      packages=['esl_model'],
+      packages=find_packages(exclude=['tests*']),
       install_requires=[
             'numpy',
             'pandas',
