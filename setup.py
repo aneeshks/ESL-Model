@@ -9,7 +9,7 @@ version = __import__('esl_model').__version__
 
 setup(name='esl_model',
       version=version,
-      description="Algorithm from The Elements of Statistical Learning book implement by Python code",
+      description="Algorithm from The Elements of Statistical Learning book implement by Python 3 code",
       long_description=readme,
       classifiers=[
           'Programming Language :: Python :: 3.5',

@@ -1,5 +1,7 @@
 ESLModels
 =========
+|Author| |License|
+
 
 Algorithm from The Elements of Statistical Learning book implement by Python 3 code.
 
@@ -10,7 +12,7 @@ The Algorithm model is placed in ``esl_model.chx.model``, ``x`` means the number
 To run the code, you must install python > 3.5, because I use ``@`` operate instead of ``numpy.dot``
 
 
-.. code-block:: python
+..  code-block:: python
     
     from esl_model.ch3.model import LeastSquareModel
     
@@ -38,6 +40,13 @@ To run the code, you must install python > 3.5, because I use ``@`` operate inst
     # get standard error
     print(test_result.std_error)
 
+
+Install
+-------
+
+.. code:: 
+
+    pip install git+https://github.com/littlezz/ESL-Model
 
 
 Reference
