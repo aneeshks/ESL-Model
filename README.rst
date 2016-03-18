@@ -1,6 +1,6 @@
 ESLModels
 =========
-|Author|
+|Author| |License| |Maintenance|
 
 
 Algorithm from The Elements of Statistical Learning book implement by Python 3 code.
@@ -58,3 +58,9 @@ Reference
 
 .. |Author| image:: https://img.shields.io/badge/Author-littlezz-blue.svg
    :target: https://github.com/littlezz
+   
+.. |License| image:: https://img.shields.io/badge/license-MIT-blue.svg
+   :target: https://raw.githubusercontent.com/littlezz/ESL-Model/master/LICENSE.md
+   
+.. |Maintenance| image:: https://img.shields.io/maintenance/yes/2016.svg
+   :target: https://github.com/littlezz/ESL-Model
