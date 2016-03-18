@@ -1,10 +1,12 @@
 from pandas import read_csv
 from os.path import join, dirname
 
-__all__ = ['ProstateDataSet']
-import sklearn
+__all__ = ['ProstateDataSet', 'VowelDataSet']
+
+
 class BaseDataSet:
     data_path = ''
+    multi_data = False
 
     def __init__(self):
         self.data = None
@@ -15,13 +17,16 @@ class BaseDataSet:
         self.feature_names = None
 
 
+        if self.multi_data:
+            self.df = map(self.read_data, self.data_path)
+        else:
+            self.df = self.read_data(self.data_path)
 
-        self.df = self.read_data()
         self._process_data()
 
-
-    def read_data(self):
-        filename = join(dirname(__file__), self.data_path)
+    @staticmethod
+    def read_data(path):
+        filename = join(dirname(__file__), path)
         return read_csv(filename)
 
 
@@ -49,3 +54,21 @@ class ProstateDataSet(BaseDataSet):
         self.train_x, self.test_x = train.iloc[:, :-1].values, test.iloc[:, :-1].values
         self.train_y, self.test_y = train.iloc[:, -1].values, test.iloc[:, -1].values
         self.feature_names = list(df.columns[:-1])
+
+
+class VowelDataSet(BaseDataSet):
+    data_path = ['data/vowel.train.csv', 'data/vowel.test.csv']
+    multi_data = True
+
+    def _process_data(self):
+        train, test = self.df
+
+        train = train.drop(train.columns[0], axis=1)
+        self.train_y = train.pop('y').values
+        self.train_x = train.values
+
+        test = test.drop(test.columns[0], axis=1)
+        self.test_y = test.pop('y').values
+        self.test_x = test.values
+
+        self.feature_names = list(train.columns)
