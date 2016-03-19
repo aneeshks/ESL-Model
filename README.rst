@@ -9,7 +9,7 @@ Until now, I finish chapter 3.
 
 The Algorithm model is placed in ``esl_model.chx.model``, ``x`` means the number of chapter, for example,  ``esl_model.ch3.model`` 
 
-To run the code, you must install python > 3.5, because I use ``@`` operate instead of ``numpy.dot``
+To run the code, you must install python >= 3.5, because I use ``@`` operate instead of ``numpy.dot``
 
 
 ..  code-block:: python
@@ -39,6 +39,29 @@ To run the code, you must install python > 3.5, because I use ``@`` operate inst
 
     # get standard error
     print(test_result.std_error)
+
+
+You can find the source in esl_model.ch3.model  
+
+I try to make the code clean and simple so that people to understand the algorithm easily.
+ 
+..  code-block:: python
+
+    class LeastSquareModel(LinearModel):
+    def pre_processing_x(self, x):
+        x = super().pre_processing_x(x)
+        x = np.insert(x, 0, 1, axis=1)
+        return x
+
+    def train(self):
+        x = self.train_x
+        y = self.train_y
+        self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
+
+    def predict(self, x):
+        x = self.pre_processing_x(x)
+        return x @ self.beta_hat
+
 
 
 Install
