@@ -11,15 +11,13 @@ class LinearModel(BaseStatModel):
         self.beta_hat = None
         self.intercept = None
 
-    def pre_processing_x(self, x):
+    def _pre_processing_x(self, x):
         x = self.standardize(x)
         return x
 
-    def pre_processing_y(self, y):
-        return y.reshape(y.size,1)
 
     def predict(self, x):
-        x = self.pre_processing_x(x)
+        x = self._pre_processing_x(x)
         x = np.insert(x, 0, 1, axis=1)
         return  x @ self.beta_hat
 
@@ -33,7 +31,7 @@ class LinearModel(BaseStatModel):
 
         N, col_num = self.train_x.shape
 
-        return self.math.sum((self.y_hat - self.train_y)**2) / (N-col_num)
+        return self.math.sum((self.y_hat - self._raw_train_y)**2) / (N-col_num)
 
 
     @property
@@ -70,7 +68,7 @@ class LinearModel(BaseStatModel):
             cols_index = remove_cols
 
         other_train_x = np.delete(self._raw_train_x, cols_index, 1)
-        other = self.__class__(train_x=other_train_x, train_y=self.train_y)
+        other = self.__class__(train_x=other_train_x, train_y=self._raw_train_y)
         other.pre_processing()
         other.train()
 
@@ -84,12 +82,12 @@ class LinearModel(BaseStatModel):
     @property
     @lazy_method
     def rss(self):
-        return self.math.sum((self.y_hat - self.train_y)**2)
+        return self.math.sum((self.y_hat - self._raw_train_y)**2)
 
 
 class LeastSquareModel(LinearModel):
-    def pre_processing_x(self, x):
-        x = super().pre_processing_x(x)
+    def _pre_processing_x(self, x):
+        x = super()._pre_processing_x(x)
         x = np.insert(x, 0, 1, axis=1)
         return x
 
@@ -99,7 +97,7 @@ class LeastSquareModel(LinearModel):
         self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
 
     def predict(self, x):
-        x = self.pre_processing_x(x)
+        x = self._pre_processing_x(x)
         return x @ self.beta_hat
 
 
@@ -109,8 +107,8 @@ class BestSubsetSelection(LinearModel):
         self.k = k
         self.select_column = None
 
-    def pre_processing_x(self, x):
-        x = super().pre_processing_x(x)
+    def _pre_processing_x(self, x):
+        x = super()._pre_processing_x(x)
         x = np.insert(x, 0, 1, axis=1)
         if self.select_column:
             x = x[:, self.select_column]
@@ -135,7 +133,7 @@ class BestSubsetSelection(LinearModel):
                 rss_min = rss
 
     def predict(self, x):
-        x = self.pre_processing_x(x)
+        x = self._pre_processing_x(x)
         return x @ self.beta_hat
 
 

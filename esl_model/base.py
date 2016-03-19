@@ -44,6 +44,10 @@ class Result:
         """
         return (np.var(self.prediction_error, ddof=1) / self.N)**0.5
 
+    @property
+    def error_rate(self):
+        return 1 - (np.sum((self.y_hat == self.y)) / self.y.shape[0])
+
     @lazy_method
     def z_score(self):
         pass
@@ -57,8 +61,12 @@ class Result:
 class BaseStatModel:
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray, features_name=None):
+
+        # ensure that train_y is (N x 1)
+        train_y = train_y.reshape((train_y.shape[0], 1))
         self.train_x = train_x
         self._raw_train_x = train_x.copy()
+        self._raw_train_y = train_y.copy()
         self.train_y = train_y
         self.features_name = features_name
 
@@ -85,15 +93,15 @@ class BaseStatModel:
         return self._raw_train_x.shape[1]
 
 
-    def pre_processing_x(self, x):
-        raise NotImplementedError
+    def _pre_processing_x(self, x):
+        return x
 
-    def pre_processing_y(self, y):
-        raise NotImplementedError
+    def _pre_processing_y(self, y):
+        return y
 
     def pre_processing(self):
-        self.train_x = self.pre_processing_x(self.train_x)
-        self.train_y = self.pre_processing_y(self.train_y)
+        self.train_x = self._pre_processing_x(self.train_x)
+        self.train_y = self._pre_processing_y(self.train_y)
 
     def train(self):
         raise NotImplementedError
@@ -103,7 +111,8 @@ class BaseStatModel:
 
     def test(self, x, y):
         y_hat = self.predict(x)
-        y = self.pre_processing_y(y)
+        y = y.reshape((y.shape[0], 1))
+        # y = self._pre_processing_y(y)
         return Result(y_hat, y)
 
 
