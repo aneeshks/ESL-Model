@@ -28,7 +28,6 @@ class LinearModel(BaseStatModel):
         # because we already add intercept to train x, so col_num is (p+1)
 
         N, col_num = self.train_x.shape
-
         return self.math.sum((self.y_hat - self._raw_train_y)**2) / (N-col_num)
 
     @property
