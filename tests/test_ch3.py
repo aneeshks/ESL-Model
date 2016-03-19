@@ -67,15 +67,6 @@ def test_best_select(prostate_data):
 def test_ridge(prostate_data):
     from esl_model.ch3.model import RidgeModel
     train_x, train_y, test_x, test_y, features = prostate_data
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.linear_model import RidgeCV, ridge_regression
-
-    # als=[(i/100) for i in range(1, 1000)]
-    # rcv = RidgeCV(alphas=[22.78])
-    # rcv.fit(std(train_x), train_y)
-    # print(rcv.alpha_)
-    # print(rcv.intercept_, rcv.coef_)
-    # print('te',np.mean((rcv.predict(std(test_x)) -test_y)**2))
 
     target_df = 5
     min_df = 9999999999999999
@@ -96,7 +87,6 @@ def test_ridge(prostate_data):
 
     print('df', r.df)
     print('alpha', r.alpha)
-    # print('rss', min_df, r.rss)
     test_error = r.test(test_x, test_y).mse
     print(test_error)
     print(r.beta_hat)

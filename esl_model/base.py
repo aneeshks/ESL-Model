@@ -109,7 +109,6 @@ class BaseStatModel:
     def test(self, x, y):
         y_hat = self.predict(x)
         y = y.reshape((y.shape[0], 1))
-        # y = self._pre_processing_y(y)
         return Result(y_hat, y)
 
 
