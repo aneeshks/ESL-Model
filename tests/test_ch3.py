@@ -75,12 +75,12 @@ def test_ridge(prostate_data):
         alpha = i/40
         r = RidgeModel(train_x=train_x, train_y=train_y, alpha=alpha, solve='raw')
         r.pre_processing()
-        r.train()
+
         if abs(r.df - target_df) < min_df:
             best_alpha = alpha
             min_df = r.df - target_df
 
-    r = RidgeModel(train_x=train_x, train_y=train_y, alpha=best_alpha, solve='raw')
+    r = RidgeModel(train_x=train_x, train_y=train_y, alpha=best_alpha, solve='svd')
     r.pre_processing()
     r.train()
 
