@@ -71,9 +71,9 @@ def test_ridge(prostate_data):
     target_df = 5
     min_df = 9999999999999999
     best_alpha = None
-    for i in range(1, 5000):
-        alpha = i/200
-        r = RidgeModel(train_x=train_x, train_y=train_y, alpha=alpha, solve='svd')
+    for i in range(1, 1000):
+        alpha = i/40
+        r = RidgeModel(train_x=train_x, train_y=train_y, alpha=alpha, solve='raw')
         r.pre_processing()
         r.train()
         if abs(r.df - target_df) < min_df:
@@ -83,7 +83,6 @@ def test_ridge(prostate_data):
     r = RidgeModel(train_x=train_x, train_y=train_y, alpha=best_alpha, solve='raw')
     r.pre_processing()
     r.train()
-    # print(ridge_regression(r.standardize(train_x), train_y, alpha=best_alpha, solver='auto'))
 
     print('df', r.df)
     print('alpha', r.alpha)
@@ -92,7 +91,6 @@ def test_ridge(prostate_data):
     print(r.beta_hat)
     print(r.test(test_x, test_y).std_error)
     assert float('{:.3f}'.format(test_error)) == 0.492
-
 
 
 def test_PCR(prostate_data):
@@ -126,7 +124,7 @@ def test_ISFR(prostate_data):
     from esl_model.ch3.model import IFSRModel
     train_x, train_y, test_x, test_y, features = prostate_data
 
-    ifsr = IFSRModel(train_x=train_x, train_y=train_y)
+    ifsr = IFSRModel(train_x=train_x, train_y=train_y, iter_max=800)
     ifsr.pre_processing()
     ifsr.train()
     print(ifsr.beta_hat)
