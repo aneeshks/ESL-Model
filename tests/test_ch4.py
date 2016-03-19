@@ -2,7 +2,9 @@ import pytest
 from .utils import digit_float
 import numpy as np
 
+
 vowel_data_y_dimension = 11
+
 
 @pytest.fixture
 def vowel_data():
@@ -33,3 +35,19 @@ def test_indicator_matrix(vowel_data):
     assert digit_float(test_result.error_rate) == 0.667
 
 
+def test_LDA(vowel_data):
+    from esl_model.ch4.model import LDAModel
+    train_x, train_y, test_x, test_y, features = vowel_data
+
+    lda = LDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    lda.pre_processing()
+    lda.train()
+
+    print(lda.y_hat[:10])
+    print(lda.error_rate)
+
+    te = lda.test(test_x, test_y)
+    print(te.error_rate)
+
+    assert digit_float(lda.error_rate) == 0.316
+    assert digit_float(te.error_rate) == 0.556
