@@ -6,6 +6,7 @@ ESLModels
 Algorithm from The Elements of Statistical Learning book implement by Python 3 code.
 
 Until now, I finish chapter 3.
+I am working on chapter 4.
 
 The Algorithm model is placed in ``esl_model.chx.model``, ``x`` means the number of chapter, for example,  ``esl_model.ch3.model`` 
 
@@ -41,7 +42,7 @@ To run the code, you must install python >= 3.5, because I use ``@`` operate ins
     print(test_result.std_error)
 
 
-You can find the source in esl_model.ch3.model  
+You can find the source in ``esl_model.ch3.model``  
 
 I try to make the code clean and simple so that people to understand the algorithm easily.
  
@@ -69,7 +70,7 @@ Install
 
 .. code:: 
 
-    pip install git+https://github.com/littlezz/ESL-Model
+    pip(3) install git+https://github.com/littlezz/ESL-Model
 
 
 Reference
