@@ -35,3 +35,4 @@ class LinearRegressionIndicatorMatrix(LeastSquareModel):
     @property
     def error_rate(self):
         return (1 - np.sum((self._raw_train_y == self.y_hat))/ self.N)
+

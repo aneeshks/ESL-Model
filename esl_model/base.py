@@ -46,11 +46,8 @@ class Result:
 
     @property
     def error_rate(self):
-        return 1 - (np.sum((self.y_hat == self.y)) / self.y.shape[0])
+        return 1 - (np.sum((self.y_hat == self.y)) / self.N)
 
-    @lazy_method
-    def z_score(self):
-        pass
 
 
 
