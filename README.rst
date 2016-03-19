@@ -48,19 +48,19 @@ I try to make the code clean and simple so that people to understand the algorit
 ..  code-block:: python
 
     class LeastSquareModel(LinearModel):
-    def pre_processing_x(self, x):
-        x = super().pre_processing_x(x)
-        x = np.insert(x, 0, 1, axis=1)
-        return x
-
-    def train(self):
-        x = self.train_x
-        y = self.train_y
-        self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
-
-    def predict(self, x):
-        x = self.pre_processing_x(x)
-        return x @ self.beta_hat
+        def pre_processing_x(self, x):
+            x = super().pre_processing_x(x)
+            x = np.insert(x, 0, 1, axis=1)
+            return x
+    
+        def train(self):
+            x = self.train_x
+            y = self.train_y
+            self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
+    
+        def predict(self, x):
+            x = self.pre_processing_x(x)
+            return x @ self.beta_hat
 
 
 
