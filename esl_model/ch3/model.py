@@ -4,7 +4,6 @@ from ..utils import lazy_method
 from itertools import combinations
 
 
-
 class LinearModel(BaseStatModel):
     def __init__(self, train_x, train_y, features_name=None):
         super().__init__(train_x, train_y, features_name)
@@ -15,11 +14,10 @@ class LinearModel(BaseStatModel):
         x = self.standardize(x)
         return x
 
-
     def predict(self, x):
         x = self._pre_processing_x(x)
         x = np.insert(x, 0, 1, axis=1)
-        return  x @ self.beta_hat
+        return x @ self.beta_hat
 
     @property
     @lazy_method
@@ -33,19 +31,16 @@ class LinearModel(BaseStatModel):
 
         return self.math.sum((self.y_hat - self._raw_train_y)**2) / (N-col_num)
 
-
     @property
     @lazy_method
     def std_err(self):
         var_beta_hat = self.math.inv(self.train_x.T @ self.train_x) * self.sigma_hat
         return var_beta_hat.diagonal() ** 0.5
 
-
     @property
     @lazy_method
     def z_score(self):
         return self.beta_hat / self.std_err
-
 
     @property
     @lazy_method
@@ -137,9 +132,8 @@ class BestSubsetSelection(LinearModel):
         return x @ self.beta_hat
 
 
-
 class RidgeModel(LinearModel):
-    def __init__(self, *args, **kwargs ):
+    def __init__(self, *args, **kwargs):
         self.alpha = kwargs.pop('alpha')
         self.solve = kwargs.pop('solve', 'svd')
         super().__init__(*args, **kwargs)
@@ -152,16 +146,13 @@ class RidgeModel(LinearModel):
             ds = (d / (d**2 + self.alpha)).reshape((-1,1))
             self.beta_hat = vt.T @ (ds * (u.T @ y))
 
-
         elif self.solve == 'raw':
             self.beta_hat = self.math.inv(X.T @ X + np.eye(self.p)*self.alpha) @ X.T @ y
-
         else:
             raise NotImplementedError
 
         self.intercept = np.mean(y)
         self.beta_hat = np.insert(self.beta_hat, 0, self.intercept, axis=0)
-
 
     @property
     @lazy_method
@@ -178,7 +169,6 @@ class LassoLARModel:
         raise NotImplementedError(self.WARN)
 
 
-
 class PrincipalComponentsRegression(LinearModel):
     def __init__(self, *args, **kwargs):
         m = kwargs.pop('m', None)
@@ -187,8 +177,7 @@ class PrincipalComponentsRegression(LinearModel):
 
     def transform_z(self, X):
         U, D, Vt = self.math.svd(X, full_matrices=False)
-        return X @ Vt.T[:,:self.m], U, D, Vt
-
+        return X @ Vt.T[:, :self.m], U, D, Vt
 
     def train(self):
         X = self.train_x
@@ -197,12 +186,10 @@ class PrincipalComponentsRegression(LinearModel):
         Z, U, D, Vt = self.transform_z(X)
 
         theta = self.math.inv(Z.T @ Z) @ (Z.T @ y)
-
-        beta = Vt.T[:,:self.m] @ theta
+        beta = Vt.T[:, :self.m] @ theta
 
         self.intercept = np.mean(y)
         self.beta_hat = np.insert(beta, 0, self.intercept, axis=0)
-
 
 
 class PartialLeastSquare(LinearModel):
@@ -229,10 +216,9 @@ class PartialLeastSquare(LinearModel):
             x[m][...] = x[m-1] - z_m @ (self.math.pinv(z_m.T @ z_m) @ (z_m.T @ x[m-1]))
 
         self.intercept = np.mean(y)
-        beta = self.math.pinv(X) @ (y_hat[self.M] - self.intercept )
+        beta = self.math.pinv(X) @ (y_hat[self.M] - self.intercept)
         self.beta_hat = np.insert(beta, 0, self.intercept, axis=0)
         self._y_hat = y_hat[self.M]
-
 
     @property
     def y_hat(self):
@@ -258,7 +244,6 @@ class IFSRModel(LinearModel):
         max_cor = cor[j]
         return j, max_cor
 
-
     def train(self):
         X = self.train_x
         y = self.train_y
@@ -270,15 +255,15 @@ class IFSRModel(LinearModel):
             # ref:  http://waxworksmath.com/Authors/G_M/Hastie/WriteUp/weatherwax_epstein_hastie_solutions_manual.pdf
             #       page 30
 
-            beta_ls_sum  = np.sum(np.abs(self.math.pinv(X.T @ X) @ X.T @ y))
+            beta_ls_sum = np.sum(np.abs(self.math.pinv(X.T @ X) @ X.T @ y))
             epsilon = beta_ls_sum / (2 * self.iter_max)
         else:
             epsilon = self.epsilon
 
         while True:
             j, max_cor = self.max_correlation_index(X, r)
-            xj = X[:,[j]]
-            theta = np.sign(xj.T @ r ) * epsilon
+            xj = X[:, [j]]
+            theta = np.sign(xj.T @ r) * epsilon
             r -= xj @ theta
             beta[j] = beta[j] + theta
 
@@ -289,6 +274,4 @@ class IFSRModel(LinearModel):
 
             self.intercept = np.mean(y)
             self.beta_hat = np.insert(beta, 0, self.intercept, axis=0)
-
-
 
