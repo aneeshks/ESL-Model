@@ -63,5 +63,7 @@ def test_QDA(vowel_data):
 
     print(qda.y_hat[:10])
     print(qda.error_rate)
-    print(qda.test(test_x, test_y).error_rate)
-    assert 0
+    te = qda.test(test_x, test_y).error_rate
+    print(te)
+    assert digit_float(qda.error_rate) == 0.011
+    assert digit_float(te) == 0.528

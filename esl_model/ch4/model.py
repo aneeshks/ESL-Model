@@ -158,9 +158,10 @@ class QDAModel(LDAModel):
 
         for k in rg:
             # delta_k is (N x 1)
-            delta_k_func = partial(self.linear_discriminant_func, k=k)
-            delta_k = np.apply_along_axis(delta_k_func, 1, X)
-            Y[:, k] = delta_k.flatten()
+            # delta_k_func = partial(self.linear_discriminant_func, k=k)
+            # delta_k = np.apply_along_axis(delta_k_func, 1, X)
+            d = self.linear_discriminant_func(X, k)
+            Y[:, k] = d.diagonal()
         # make the k start from 1
         y_hat = Y.argmax(axis=1).reshape((-1, 1)) + 1
 
