@@ -51,3 +51,17 @@ def test_LDA(vowel_data):
 
     assert digit_float(lda.error_rate) == 0.316
     assert digit_float(te.error_rate) == 0.556
+
+
+def test_QDA(vowel_data):
+    from esl_model.ch4.model import QDAModel
+    train_x, train_y, test_x, test_y, features = vowel_data
+
+    qda = QDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    qda.pre_processing()
+    qda.train()
+
+    print(qda.y_hat[:10])
+    print(qda.error_rate)
+    print(qda.test(test_x, test_y).error_rate)
+    assert 0
