@@ -136,7 +136,7 @@ class QDAModel(LDAModel):
 
 
 
-    def linear_discriminant_func(self, x, k):
+    def quadratic_discriminant_func(self, x, k):
         mu_k = self.Mu[k]
         pi_k = self.Pi[k]
         sigma_k = self.Sigma_hat[k]
@@ -160,7 +160,9 @@ class QDAModel(LDAModel):
             # delta_k is (N x 1)
             # delta_k_func = partial(self.linear_discriminant_func, k=k)
             # delta_k = np.apply_along_axis(delta_k_func, 1, X)
-            d = self.linear_discriminant_func(X, k)
+
+            # d is NxN
+            d = self.quadratic_discriminant_func(X, k)
             Y[:, k] = d.diagonal()
         # make the k start from 1
         y_hat = Y.argmax(axis=1).reshape((-1, 1)) + 1
