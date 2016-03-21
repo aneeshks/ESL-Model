@@ -50,7 +50,7 @@ I try to make the code clean and simple so that people can understand the algori
 
     class LeastSquareModel(LinearModel):
         def pre_processing_x(self, x):
-            x = super().pre_processing_x(x)
+            x = self.standardize(x)
             x = np.insert(x, 0, 1, axis=1)
             return x
     
