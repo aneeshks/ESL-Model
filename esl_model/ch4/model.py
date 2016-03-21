@@ -109,9 +109,14 @@ class LDAModel(ErrorRateMixin, LinearModel):
 
 
 class QDAModel(LDAModel):
+    """
+    Quadratic Discriminant Analysis
+    pp. 110
 
-    def _pre_processing_x(self, x):
-        return self.standardize(x)
+    Ref
+    ---
+    http://www.wikicoursenote.com/wiki/Stat841#In_practice
+    """
 
     def train(self):
         X = self.train_x
@@ -142,6 +147,8 @@ class QDAModel(LDAModel):
         sigma_k = self.Sigma_hat[k]
         pinv = self.math.pinv
 
+        # assume that each row of x contain observation
+
         result = -(np.log(np.linalg.det(sigma_k)))/2 - \
                  ((x - mu_k) @ pinv(sigma_k, rcond=0) @ (x - mu_k).T)/2 + \
                  log(pi_k)
@@ -155,13 +162,17 @@ class QDAModel(LDAModel):
         Y = np.zeros((N, self.K))
 
         for k in range(self.K):
+            # the intuitive solution is use np.apply_along_axis, but is too slow
             # delta_k is (N x 1)
             # delta_k_func = partial(self.linear_discriminant_func, k=k)
             # delta_k = np.apply_along_axis(delta_k_func, 1, X)
 
-            # d is NxN
+            # d is NxN,
+            # Let B = A@A.T, the diagonal of B is [A[i] @ A[i].T for i in range(A.shape(0)]
+
             d = self.quadratic_discriminant_func(X, k)
             Y[:, k] = d.diagonal()
+
         # make the k start from 1
         y_hat = Y.argmax(axis=1).reshape((-1, 1)) + 1
 
