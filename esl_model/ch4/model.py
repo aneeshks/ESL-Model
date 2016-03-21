@@ -154,9 +154,7 @@ class QDAModel(LDAModel):
         N = X.shape[0]
         Y = np.zeros((N, self.K))
 
-        rg = reversed(list(range(self.p + 1)))
-
-        for k in rg:
+        for k in range(self.K):
             # delta_k is (N x 1)
             # delta_k_func = partial(self.linear_discriminant_func, k=k)
             # delta_k = np.apply_along_axis(delta_k_func, 1, X)
