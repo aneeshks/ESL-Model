@@ -182,3 +182,40 @@ class QDAModel(LinearRegression):
         return y_hat
 
 
+class RDAModel(QDAModel):
+    def __init__(self, *args, alpha=1, **kwargs):
+        self.alpha = alpha
+        super().__init__(*args, **kwargs)
+
+
+    def train(self):
+
+        X = self.train_x
+        y = self.train_y
+        K = self.K
+        p = self.p
+
+        self.Mu = np.zeros((K, p))
+        self.Pi = np.zeros((K, 1))
+        # list of sigma_k
+        self.Sigma_hat = []
+        # the sum of sigma_k
+        self.Sigma_tot = np.zeros((1, p))
+
+        for k in range(K):
+            mask = (y == k+1)
+            N_k = sum(mask)
+
+            X_k = X[mask.flatten(), :]
+
+            self.Pi[k] = N_k / self.N
+            self.Mu[k] = np.sum(X_k, axis=0).reshape((1, -1)) / N_k
+            # We div by N_k instead of (N-K)
+            self.Sigma_hat.append(((X_k - self.Mu[k]).T @ (X_k - self.Mu[k])) / (N_k))
+            self.Sigma_tot = self.Sigma_tot + (X_k - self.Mu[k]).T @ (X_k - self.Mu[k])
+
+        self.Sigma_tot = self.Sigma_tot / (self.N - K)
+
+        for k in range(K):
+            self.Sigma_hat[k] = (self.Sigma_hat[k] * self.alpha) + self.Sigma_tot * (1 - self.alpha)
+

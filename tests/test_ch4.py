@@ -67,3 +67,21 @@ def test_QDA(vowel_data):
     print(te)
     assert digit_float(qda.error_rate) == 0.011
     assert digit_float(te) == 0.528
+
+
+def test_RDA(vowel_data):
+    from esl_model.ch4.model import RDAModel
+    train_x, train_y, test_x, test_y, features = vowel_data
+
+    # http://waxworksmath.com/Authors/G_M/Hastie/WriteUp/weatherwax_epstein_hastie_solutions_manual.pdf
+    # pp 60
+    model = RDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension, alpha=0.969697)
+    model.pre_processing()
+    model.train()
+
+
+
+    print(model.error_rate)
+    te = model.test(test_x, test_y)
+    print(te.error_rate)
+    assert digit_float(te.error_rate) == 0.478
