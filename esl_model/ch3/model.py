@@ -81,7 +81,7 @@ class LinearModel(BaseStatModel):
 
 class LeastSquareModel(LinearModel):
     def _pre_processing_x(self, x):
-        x = super()._pre_processing_x(x)
+        x = self.standardize(x)
         x = np.insert(x, 0, 1, axis=1)
         return x
 
@@ -102,7 +102,7 @@ class BestSubsetSelection(LinearModel):
         self.select_column = None
 
     def _pre_processing_x(self, x):
-        x = super()._pre_processing_x(x)
+        x = self.standardize(x)
         x = np.insert(x, 0, 1, axis=1)
         if self.select_column:
             x = x[:, self.select_column]
