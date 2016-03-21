@@ -1,6 +1,5 @@
 from math import log
 
-from ..base import BaseStatModel
 from ..ch3.model import LeastSquareModel, LinearModel
 import numpy as np
 from ..utils import lazy_method
@@ -8,16 +7,18 @@ from functools import partial
 
 
 
+class LinearRegression(LinearModel):
+    def __init__(self, *args, **kwargs):
+        self.K = kwargs.pop('K', 1)
+        super().__init__(*args, **kwargs)
 
-class ErrorRateMixin:
     @property
     @lazy_method
     def error_rate(self):
         return (1 - np.sum((self._raw_train_y == self.y_hat))/ self.N)
 
 
-
-class LinearRegressionIndicatorMatrix(ErrorRateMixin, LeastSquareModel):
+class LinearRegressionIndicatorMatrix(LeastSquareModel):
     def __init__(self, *args, **kwargs):
         self.K = kwargs.pop('K', 1)
         super().__init__(*args, **kwargs)
@@ -42,15 +43,17 @@ class LinearRegressionIndicatorMatrix(ErrorRateMixin, LeastSquareModel):
 
         return y
 
+    @property
+    @lazy_method
+    def error_rate(self):
+        return (1 - np.sum((self._raw_train_y == self.y_hat))/ self.N)
 
-class LDAModel(ErrorRateMixin, LinearModel):
+
+class LDAModel(LinearRegression):
     """
     Linear Discriminant Analysis
     from page 106
     """
-    def __init__(self, *args, **kwargs):
-        self.K = kwargs.pop('K', 1)
-        super().__init__(*args, **kwargs)
 
     def _pre_processing_x(self, x):
         x = self.standardize(x)
@@ -108,7 +111,7 @@ class LDAModel(ErrorRateMixin, LinearModel):
         return y_hat
 
 
-class QDAModel(LDAModel):
+class QDAModel(LinearRegression):
     """
     Quadratic Discriminant Analysis
     pp. 110
@@ -177,3 +180,5 @@ class QDAModel(LDAModel):
         y_hat = Y.argmax(axis=1).reshape((-1, 1)) + 1
 
         return y_hat
+
+
