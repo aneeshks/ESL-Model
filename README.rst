@@ -44,7 +44,7 @@ To run the code, you must install python >= 3.5, because I use ``@`` operate ins
 
 You can find the source in ``esl_model.ch3.model``  
 
-I try to make the code clean and simple so that people to understand the algorithm easily.
+I try to make the code clean and simple so that people can understand the algorithm easily.
  
 ..  code-block:: python
 
