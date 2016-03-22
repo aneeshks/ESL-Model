@@ -220,6 +220,6 @@ class RDAModel(QDAModel):
             self.Sigma_hat[k] = (self.Sigma_hat[k] * self.alpha) + self.Sigma_tot * (1 - self.alpha)
 
 
-class LDAForComputation(LDAModel):
-    def predict(self, x):
-        X = self._pre_processing_x(x)
+class ReducedRankLDAModel(LinearRegression):
+    pass
+
