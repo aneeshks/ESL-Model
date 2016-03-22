@@ -14,6 +14,9 @@ class LinearModel(BaseStatModel):
         x = self.standardize(x)
         return x
 
+    def train(self):
+        raise NotImplementedError
+
     def predict(self, x):
         x = self._pre_processing_x(x)
         x = np.insert(x, 0, 1, axis=1)
