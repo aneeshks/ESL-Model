@@ -248,6 +248,7 @@ class LDAForComputation(LDAModel):
             mu_k_star = A @ self.Mu[k]
 
             # Ref: http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.norm.html
+            # Ref: http://stackoverflow.com/questions/1401712/how-can-the-euclidean-distance-be-calculated-with-numpy
             Y[:, k] = LA.norm(X_star - mu_k_star, axis=1) * 0.5 - log(self.Pi[k])
 
         y_hat = Y.argmin(axis=1).reshape((-1, 1)) + 1
