@@ -226,16 +226,23 @@ class ReducedRankLDAModel(LinearRegression):
 
 
 class LDAForComputation(LDAModel):
-    def predict(self, x):
-        X = self._pre_processing_x(x)
-        Y = np.zeros((X.shape[0], self.K))
+
+    def train(self):
+        super().train()
         sigma = self.Sigma_hat
         D_, U = LA.eigh(sigma)
         D = np.diagflat(D_)
 
-        A = np.power(LA.pinv(D),0.5) @ U.T
+        self.A = np.power(LA.pinv(D),0.5) @ U.T
+
+    def predict(self, x):
+        X = self._pre_processing_x(x)
+        Y = np.zeros((X.shape[0], self.K))
+        A = self.A
+
         # because X is (N x p), A is (K x p), we can to get the X_star (NxK)
         X_star = X @ A.T
+
         for k in range(self.K):
             # mu_s_star shape is (p,)
             mu_k_star = A @ self.Mu[k]
