@@ -171,9 +171,9 @@ class QDAModel(LinearRegression):
             # delta_k_func = partial(self.linear_discriminant_func, k=k)
             # delta_k = np.apply_along_axis(delta_k_func, 1, X)
 
+
             # d is NxN,
             # Let B = A@A.T, the diagonal of B is [A[i] @ A[i].T for i in range(A.shape(0)]
-
             d = self.quadratic_discriminant_func(X, k)
             Y[:, k] = d.diagonal()
 
