@@ -49,7 +49,7 @@ I try to make the code clean and simple so that people can understand the algori
 ..  code-block:: python
 
     class LeastSquareModel(LinearModel):
-        def pre_processing_x(self, x):
+        def _pre_processing_x(self, x):
             x = self.standardize(x)
             x = np.insert(x, 0, 1, axis=1)
             return x
@@ -60,7 +60,7 @@ I try to make the code clean and simple so that people can understand the algori
             self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
     
         def predict(self, x):
-            x = self.pre_processing_x(x)
+            x = self._pre_processing_x(x)
             return x @ self.beta_hat
 
 
