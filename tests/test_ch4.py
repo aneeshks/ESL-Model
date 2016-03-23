@@ -85,3 +85,21 @@ def test_RDA(vowel_data):
     te = model.test(test_x, test_y)
     print(te.error_rate)
     assert digit_float(te.error_rate) == 0.478
+
+
+def test_LDA_computation(vowel_data):
+    from esl_model.ch4.model import LDAForComputation
+    train_x, train_y, test_x, test_y, features = vowel_data
+
+    model = LDAForComputation(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    model.pre_processing()
+    model.train()
+
+    from esl_model.ch4.model import LDAModel
+    lda = LDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    lda.pre_processing()
+    lda.train()
+    print(model.error_rate)
+
+    assert np.isclose(model.error_rate, lda.error_rate)
+    assert np.isclose(model.test(test_x, test_y).error_rate, lda.test(test_x, test_y).error_rate)

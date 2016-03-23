@@ -2,6 +2,7 @@ from math import log
 
 from ..ch3.model import LeastSquareModel, LinearModel
 import numpy as np
+from numpy import linalg as LA
 from ..utils import lazy_method
 from functools import partial
 
@@ -222,4 +223,25 @@ class RDAModel(QDAModel):
 
 class ReducedRankLDAModel(LinearRegression):
     pass
+
+
+class LDAForComputation(LDAModel):
+    def predict(self, x):
+        X = self._pre_processing_x(x)
+        Y = np.zeros((X.shape[0], self.K))
+        sigma = self.Sigma_hat
+        D_, U = LA.eigh(sigma)
+        D = np.diagflat(D_)
+
+        A = np.power(LA.pinv(D),0.5) @ U.T
+        # because X is (N x p), A is (K x p), we can to get the X_star (NxK)
+        X_star = X @ A.T
+        for k in range(self.K):
+            mu_k_star = (A @ self.Mu[k].reshape((-1,1))).flatten()
+
+            # Ref: http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.norm.html
+            Y[:, k] = LA.norm(X_star - mu_k_star, axis=1) * 0.5 - log(self.Pi[k])
+
+        y_hat = Y.argmin(axis=1).reshape((-1, 1)) + 1
+        return y_hat
 
