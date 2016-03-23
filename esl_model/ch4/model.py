@@ -237,7 +237,8 @@ class LDAForComputation(LDAModel):
         # because X is (N x p), A is (K x p), we can to get the X_star (NxK)
         X_star = X @ A.T
         for k in range(self.K):
-            mu_k_star = (A @ self.Mu[k].reshape((-1,1))).flatten()
+            # mu_s_star shape is (p,)
+            mu_k_star = A @ self.Mu[k]
 
             # Ref: http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.norm.html
             Y[:, k] = LA.norm(X_star - mu_k_star, axis=1) * 0.5 - log(self.Pi[k])
