@@ -80,7 +80,7 @@ Reference
 - http://waxworksmath.com/Authors/G_M/Hastie/WriteUp/weatherwax_epstein_hastie_solutions_manual.pdf  
 - http://www.wikicoursenote.com/wiki/Stat841  
 - http://www.stat.cmu.edu/~ryantibs/datamining/lectures/21-clas2-marked.pdf
-
+- http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/lda2.pdf
 
 
 
