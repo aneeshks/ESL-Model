@@ -103,3 +103,18 @@ def test_LDA_computation(vowel_data):
 
     assert np.isclose(model.error_rate, lda.error_rate)
     assert np.isclose(model.test(test_x, test_y).error_rate, lda.test(test_x, test_y).error_rate)
+
+
+def test_RRLDA(vowel_data):
+    from esl_model.ch4.model import ReducedRankLDAModel
+    train_x, train_y, test_x, test_y, features = vowel_data
+
+    model = ReducedRankLDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension, L=2)
+    model.pre_processing()
+    model.train()
+
+    print(model.y_hat[:5])
+    print(model.error_rate)
+
+
+    assert 0

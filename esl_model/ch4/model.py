@@ -221,8 +221,6 @@ class RDAModel(QDAModel):
             self.Sigma_hat[k] = (self.Sigma_hat[k] * self.alpha) + self.Sigma_tot * (1 - self.alpha)
 
 
-class ReducedRankLDAModel(LinearRegression):
-    pass
 
 
 class LDAForComputation(LDAModel):
@@ -254,3 +252,55 @@ class LDAForComputation(LDAModel):
         y_hat = Y.argmin(axis=1).reshape((-1, 1)) + 1
         return y_hat
 
+
+
+class ReducedRankLDAModel(LDAForComputation):
+    def __init__(self, *args, L, **kwargs):
+        self.L = L
+        super().__init__(*args, **kwargs)
+
+    def train(self):
+        super().train()
+        W = self.Sigma_hat
+        mu = np.sum(self.Pi * self.Mu, axis=0)
+        B = np.zeros((self.p, self.p))
+        for k in range(self.K):
+            B = B + self.Pi[k]*(self.Mu[k] - mu)[None, :] @ (self.Mu[k] - mu)[:, None]
+
+        # get W**0.5
+        Dw_, Uw = LA.eigh(W)
+        Dw_ = Dw_[::-1]
+        Uw = np.fliplr(Uw)
+        Dw = np.diagflat(np.power(Dw_, -0.5))
+        W_half = self.math.pinv(np.diagflat(Dw_**0.5) @ Uw.T)
+        B_star = Dw @ Uw.T @ B @ Uw @ Dw
+        print(Dw_)
+        D_, V = LA.eigh(B_star)
+        V = np.fliplr(V)
+        self.A = np.zeros((self.L, self.p))
+        for l in range(self.L):
+            self.A[l, :] = (W_half) @ V[:, l]
+
+        # self.Mu_star = self.Mu @ self.A.T
+
+
+    def predict(self, x):
+        X = self._pre_processing_x(x)
+        Y = np.zeros((X.shape[0], self.K))
+        A = self.A
+
+        # because X is (N x p), A is (K x p), we can to get the X_star (NxK)
+        X_star = X @ A.T
+
+        for k in range(self.K):
+            # mu_s_star shape is (p,)
+            mu_k_star = A @ self.Mu[k]
+
+            # Ref: http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.norm.html
+            # Ref: http://stackoverflow.com/questions/1401712/how-can-the-euclidean-distance-be-calculated-with-numpy
+            Y[:, k] = LA.norm(X_star - mu_k_star, axis=1) * 0.5 + log(self.Pi[k])
+
+        y_hat = Y.argmin(axis=1).reshape((-1, 1)) + 1
+        return y_hat
+
+# import sklearn.lda
