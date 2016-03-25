@@ -265,7 +265,10 @@ class ReducedRankLDAModel(LDAForComputation):
         mu = np.sum(self.Pi * self.Mu, axis=0)
         B = np.zeros((self.p, self.p))
         for k in range(self.K):
-            B = B + self.Pi[k]*(self.Mu[k] - mu)[None, :] @ (self.Mu[k] - mu)[:, None]
+            B = B + self.Pi[k]*((self.Mu[k] - mu)[:, None] @ ((self.Mu[k] - mu)[None, :]))
+        # print('B',B)
+        # k=1
+        # print('shape', self.Pi[k]*((self.Mu[k] - mu)[:, None] @ (self.Mu[k] - mu)[:, None]))
 
         # get W**0.5
         Dw_, Uw = LA.eigh(W)
@@ -274,7 +277,7 @@ class ReducedRankLDAModel(LDAForComputation):
         Dw = np.diagflat(np.power(Dw_, -0.5))
         W_half = self.math.pinv(np.diagflat(Dw_**0.5) @ Uw.T)
         B_star = Dw @ Uw.T @ B @ Uw @ Dw
-        print(Dw_)
+        # print(Dw_)
         D_, V = LA.eigh(B_star)
         V = np.fliplr(V)
         self.A = np.zeros((self.L, self.p))

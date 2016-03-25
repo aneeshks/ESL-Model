@@ -116,5 +116,9 @@ def test_RRLDA(vowel_data):
     print(model.y_hat[:5])
     print(model.error_rate)
 
+    te = model.test(test_x, test_y)
+    print(te.error_rate)
 
+    assert digit_float(model.error_rate) == 0.350
+    assert digit_float(te.error_rate) == 0.491
     assert 0
