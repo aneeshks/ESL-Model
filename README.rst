@@ -68,7 +68,7 @@ How to
 ------
 I also write some article describe how to write some algorithm.  
 
-- How to write RRLDA   
+How to write RRLDA   
     http://littlezz.github.io/how-to-write-reduced-rank-linear-discriminant-analysis-with-python.html
 
 
