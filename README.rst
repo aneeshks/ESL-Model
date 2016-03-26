@@ -81,6 +81,7 @@ Reference
 - http://www.wikicoursenote.com/wiki/Stat841  
 - http://www.stat.cmu.edu/~ryantibs/datamining/lectures/21-clas2-marked.pdf
 - http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/lda2.pdf
+- https://onlinecourses.science.psu.edu/stat857/node/83up
 
 
 
