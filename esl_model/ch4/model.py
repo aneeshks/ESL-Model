@@ -255,6 +255,10 @@ class LDAForComputation(LDAModel):
 
 
 class ReducedRankLDAModel(LDAForComputation):
+    """
+    ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/lda2.pdf
+    """
+
     def __init__(self, *args, L, **kwargs):
         self.L = L
         super().__init__(*args, **kwargs)
@@ -264,9 +268,11 @@ class ReducedRankLDAModel(LDAForComputation):
         W = self.Sigma_hat
         mu = np.sum(self.Pi * self.Mu, axis=0)
         B = np.zeros((self.p, self.p))
+        # vector @ vector equal scalar, use vector[:, None] to transform to matrix
         for k in range(self.K):
             B = B + self.Pi[k]*((self.Mu[k] - mu)[:, None] @ ((self.Mu[k] - mu)[None, :]))
 
+        # Be careful, the `eigh` method get the eigenvalues in ascending , which is opposite to R.
         Dw_, Uw = LA.eigh(W)
         Dw_ = Dw_[::-1]
         Uw = np.fliplr(Uw)
@@ -275,6 +281,8 @@ class ReducedRankLDAModel(LDAForComputation):
         B_star = Dw @ Uw.T @ B @ Uw @ Dw
         D_, V = LA.eigh(B_star)
         V = np.fliplr(V)
+
+        # overwrite `self.A` so that we can reuse `predict` method define in parent class
         self.A = np.zeros((self.L, self.p))
         for l in range(self.L):
             self.A[l, :] = (W_half) @ V[:, l]
