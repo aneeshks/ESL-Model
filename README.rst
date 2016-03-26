@@ -10,7 +10,7 @@ I am working on chapter 4.
 
 The Algorithm model is placed in ``esl_model.chx.model``, ``x`` means the number of chapter, for example,  ``esl_model.ch3.model`` 
 
-To run the code, you must install python >= 3.5, because I use ``@`` operate instead of ``numpy.dot``
+To run the code, you must install Python >= 3.5, because I use ``@`` operate instead of ``numpy.dot``
 
 
 ..  code-block:: python
