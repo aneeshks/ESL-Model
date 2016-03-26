@@ -234,6 +234,11 @@ class LDAForComputation(LDAModel):
 
 class ReducedRankLDAModel(LDAForComputation):
     """
+    page 113, 4.3.3
+
+    I also write a blog describe how to write RRLDA:
+    http://littlezz.github.io/how-to-write-reduced-rank-linear-discriminant-analysis-with-python.html
+
     ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/lda2.pdf
     """
 
