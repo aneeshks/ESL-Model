@@ -266,23 +266,39 @@ class ReducedRankLDAModel(LDAForComputation):
     def train(self):
         super().train()
         W = self.Sigma_hat
-        mu = np.sum(self.Pi * self.Mu, axis=0)
-        B = np.zeros((self.p, self.p))
-        # vector @ vector equal scalar, use vector[:, None] to transform to matrix
-        for k in range(self.K):
-            B = B + self.Pi[k]*((self.Mu[k] - mu)[:, None] @ ((self.Mu[k] - mu)[None, :]))
+        # prior probabilities (K,1)
+        Pi = self.Pi
+        # class centroids (K, p)
+        Mu = self.Mu
+        p = self.p
+        # the number of class
+        K = self.K
+        # the dimension you want
+        L = self.L
+
+        # Mu is (K,p) matrix, Pi is (K,1)
+        mu = np.sum(Pi * Mu, axis=0)
+        B = np.zeros((p, p))
+
+        for k in range(K):
+            # vector @ vector equal scalar, use vector[:, None] to transform to matrix
+            # vec[:, None] equal to vec.reshape((1, vec.shape[0]))
+            B = B + Pi[k]*((Mu[k] - mu)[:, None] @ ((Mu[k] - mu)[None, :]))
 
         # Be careful, the `eigh` method get the eigenvalues in ascending , which is opposite to R.
-        Dw_, Uw = LA.eigh(W)
-        Dw_ = Dw_[::-1]
+        Dw, Uw = LA.eigh(W)
+        # reverse the Dw_ and Uw
+        Dw = Dw[::-1]
         Uw = np.fliplr(Uw)
-        Dw = np.diagflat(np.power(Dw_, -0.5))
-        W_half = self.math.pinv(np.diagflat(Dw_**0.5) @ Uw.T)
-        B_star = Dw @ Uw.T @ B @ Uw @ Dw
+
+        W_half = self.math.pinv(np.diagflat(Dw**0.5) @ Uw.T)
+        B_star = W_half.T @ B @ W_half
         D_, V = LA.eigh(B_star)
+
+        # reverse V
         V = np.fliplr(V)
 
         # overwrite `self.A` so that we can reuse `predict` method define in parent class
-        self.A = np.zeros((self.L, self.p))
-        for l in range(self.L):
+        self.A = np.zeros((L, p))
+        for l in range(L):
             self.A[l, :] = (W_half) @ V[:, l]
