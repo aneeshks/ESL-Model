@@ -4,8 +4,6 @@ from ..ch3.model import LeastSquareModel, LinearModel
 import numpy as np
 from numpy import linalg as LA
 from ..utils import lazy_method
-from functools import partial
-
 
 
 class LinearRegression(LinearModel):
@@ -16,7 +14,7 @@ class LinearRegression(LinearModel):
     @property
     @lazy_method
     def error_rate(self):
-        return (1 - np.sum((self._raw_train_y == self.y_hat))/ self.N)
+        return 1 - np.sum((self._raw_train_y == self.y_hat))/ self.N
 
 
 class LinearRegressionIndicatorMatrix(LeastSquareModel):
@@ -35,19 +33,17 @@ class LinearRegressionIndicatorMatrix(LeastSquareModel):
                 Y[i, k-1] = 1
         else:
             return super()._pre_processing_y(y)
-
         return Y
 
     def predict(self, x):
         Y_hat = super().predict(x)
-        y = (Y_hat.argmax(axis=1)).reshape((-1,1)) + 1
-
+        y = (Y_hat.argmax(axis=1)).reshape((-1, 1)) + 1
         return y
 
     @property
     @lazy_method
     def error_rate(self):
-        return (1 - np.sum((self._raw_train_y == self.y_hat))/ self.N)
+        return (1 - np.sum((self._raw_train_y == self.y_hat)) / self.N)
 
 
 class LDAModel(LinearRegression):
@@ -80,9 +76,6 @@ class LDAModel(LinearRegression):
             self.Mu[k] = np.sum(X_k, axis=0).reshape((1, -1)) / N_k
             self.Sigma_hat = self.Sigma_hat + ((X_k - self.Mu[k]).T @ (X_k - self.Mu[k])) / (self.N - K)
 
-
-
-
     def linear_discriminant_func(self, x, k):
         """
         linear discriminant function.
@@ -93,7 +86,6 @@ class LDAModel(LinearRegression):
         pi_k = self.Pi[k]
         sigma_inv = self.math.pinv(self.Sigma_hat)
         result = mu_k @ sigma_inv @ x.T - (mu_k @ sigma_inv @ mu_k.T)/2 + log(pi_k)
-
         return result
 
     def predict(self, x):
@@ -108,7 +100,6 @@ class LDAModel(LinearRegression):
 
         # make the k start from 1
         y_hat = Y.argmax(axis=1).reshape((-1, 1)) + 1
-
         return y_hat
 
 
@@ -135,15 +126,12 @@ class QDAModel(LinearRegression):
         for k in range(K):
             mask = (y == k+1)
             N_k = sum(mask)
-
             X_k = X[mask.flatten(), :]
 
             self.Pi[k] = N_k / self.N
             self.Mu[k] = np.sum(X_k, axis=0).reshape((1, -1)) / N_k
             # We div by N_k instead of (N-K)
-            self.Sigma_hat.append(((X_k - self.Mu[k]).T @ (X_k - self.Mu[k])) / (N_k))
-
-
+            self.Sigma_hat.append(((X_k - self.Mu[k]).T @ (X_k - self.Mu[k])) / N_k)
 
     def quadratic_discriminant_func(self, x, k):
         mu_k = self.Mu[k]
@@ -152,13 +140,9 @@ class QDAModel(LinearRegression):
         pinv = self.math.pinv
 
         # assume that each row of x contain observation
-
         result = -(np.log(np.linalg.det(sigma_k)))/2 - \
-                 ((x - mu_k) @ pinv(sigma_k, rcond=0) @ (x - mu_k).T)/2 + \
-                 log(pi_k)
+                 ((x - mu_k) @ pinv(sigma_k, rcond=0) @ (x - mu_k).T)/2 + log(pi_k)
         return result
-
-
 
     def predict(self, x):
         X = self._pre_processing_x(x)
@@ -179,7 +163,6 @@ class QDAModel(LinearRegression):
 
         # make the k start from 1
         y_hat = Y.argmax(axis=1).reshape((-1, 1)) + 1
-
         return y_hat
 
 
@@ -188,9 +171,7 @@ class RDAModel(QDAModel):
         self.alpha = alpha
         super().__init__(*args, **kwargs)
 
-
     def train(self):
-
         X = self.train_x
         y = self.train_y
         K = self.K
@@ -212,15 +193,13 @@ class RDAModel(QDAModel):
             self.Pi[k] = N_k / self.N
             self.Mu[k] = np.sum(X_k, axis=0).reshape((1, -1)) / N_k
             # We div by N_k instead of (N-K)
-            self.Sigma_hat.append(((X_k - self.Mu[k]).T @ (X_k - self.Mu[k])) / (N_k))
+            self.Sigma_hat.append(((X_k - self.Mu[k]).T @ (X_k - self.Mu[k])) / N_k)
             self.Sigma_tot = self.Sigma_tot + (X_k - self.Mu[k]).T @ (X_k - self.Mu[k])
 
         self.Sigma_tot = self.Sigma_tot / (self.N - K)
 
         for k in range(K):
             self.Sigma_hat[k] = (self.Sigma_hat[k] * self.alpha) + self.Sigma_tot * (1 - self.alpha)
-
-
 
 
 class LDAForComputation(LDAModel):
@@ -230,8 +209,7 @@ class LDAForComputation(LDAModel):
         sigma = self.Sigma_hat
         D_, U = LA.eigh(sigma)
         D = np.diagflat(D_)
-
-        self.A = np.power(LA.pinv(D),0.5) @ U.T
+        self.A = np.power(LA.pinv(D), 0.5) @ U.T
 
     def predict(self, x):
         X = self._pre_processing_x(x)
@@ -254,7 +232,6 @@ class LDAForComputation(LDAModel):
         return y_hat
 
 
-
 class ReducedRankLDAModel(LDAForComputation):
     """
     ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/lda2.pdf
@@ -267,7 +244,7 @@ class ReducedRankLDAModel(LDAForComputation):
     def train(self):
         super().train()
         W = self.Sigma_hat
-        # prior probabilities (K,1)
+        # prior probabilities (K, 1)
         Pi = self.Pi
         # class centroids (K, p)
         Mu = self.Mu
@@ -277,7 +254,7 @@ class ReducedRankLDAModel(LDAForComputation):
         # the dimension you want
         L = self.L
 
-        # Mu is (K,p) matrix, Pi is (K,1)
+        # Mu is (K, p) matrix, Pi is (K, 1)
         mu = np.sum(Pi * Mu, axis=0)
         B = np.zeros((p, p))
 
@@ -302,4 +279,4 @@ class ReducedRankLDAModel(LDAForComputation):
         # overwrite `self.A` so that we can reuse `predict` method define in parent class
         self.A = np.zeros((L, p))
         for l in range(L):
-            self.A[l, :] = (W_half) @ V[:, l]
+            self.A[l, :] = W_half @ V[:, l]
