@@ -49,7 +49,6 @@ class Result:
 
 
 class BaseStatModel:
-
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray, features_name=None):
         # ensure that train_y is (N x 1)
         train_y = train_y.reshape((train_y.shape[0], 1))
@@ -59,17 +58,22 @@ class BaseStatModel:
         self.train_y = train_y
         self.features_name = features_name
 
+        self._x_std_ = None
+        self._x_mean_ = None
+
     def standardize(self, x, axis=0, with_mean=True, with_std=True):
         if getattr(self, '_x_std_', None) is None or getattr(self, '_x_mean_', None) is None:
-            self._x_mean_ = x.mean(axis=0)
-            self._x_std_ = x.std(axis=0, ddof=1)
-
-        return (x-self._x_mean_) / self._x_std_
+            self._x_mean_ = x.mean(axis=axis)
+            self._x_std_ = x.std(axis=axis, ddof=1)
+        if with_mean:
+            x = x - self._x_mean_
+        if with_std:
+            x = x / self._x_std_
+        return x
 
     @property
     def N(self):
         """number of N sample"""
-
         return self._raw_train_x.shape[0]
 
     @property
