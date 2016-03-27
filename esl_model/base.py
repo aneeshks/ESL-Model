@@ -1,4 +1,4 @@
-import  numpy as np
+import numpy as np
 from .utils import lazy_method
 from numpy import linalg
 from scipy.linalg import svd
@@ -14,13 +14,12 @@ class MathCollection:
     def __repr__(self):
         return 'Math Collection'
 
+
 mathcollection = MathCollection()
 
 
-
-
 class Result:
-    def __init__(self, y_hat:np.ndarray, y:np.ndarray):
+    def __init__(self, y_hat: np.ndarray, y: np.ndarray):
         self.y_hat = y_hat
         self.y = y
         self.prediction_error = np.power(self.y_hat - self.y, 2)
@@ -33,7 +32,7 @@ class Result:
         mean of prediction error
         :return:
         """
-        return mathcollection.sum(self.prediction_error)/ self.N
+        return mathcollection.sum(self.prediction_error) / self.N
 
     @property
     @lazy_method
@@ -49,16 +48,9 @@ class Result:
         return 1 - (np.sum((self.y_hat == self.y)) / self.N)
 
 
-
-
-
-
-
-
 class BaseStatModel:
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray, features_name=None):
-
         # ensure that train_y is (N x 1)
         train_y = train_y.reshape((train_y.shape[0], 1))
         self.train_x = train_x
@@ -74,7 +66,6 @@ class BaseStatModel:
 
         return (x-self._x_mean_) / self._x_std_
 
-
     @property
     def N(self):
         """number of N sample"""
@@ -88,7 +79,6 @@ class BaseStatModel:
         :return:
         """
         return self._raw_train_x.shape[1]
-
 
     def _pre_processing_x(self, X: np.ndarray):
         return X
@@ -111,12 +101,6 @@ class BaseStatModel:
         y = y.reshape((y.shape[0], 1))
         return Result(y_hat, y)
 
-
     @property
     def math(self):
         return mathcollection
-
-
-
-
-
