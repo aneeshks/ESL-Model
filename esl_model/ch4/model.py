@@ -285,3 +285,19 @@ class ReducedRankLDAModel(LDAForComputation):
         self.A = np.zeros((L, p))
         for l in range(L):
             self.A[l, :] = W_half @ V[:, l]
+
+
+class LogisticRegression(LinearRegression):
+    """
+    page 119.
+    two class case
+
+    ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/logit.pdf
+    """
+
+
+    def train(self):
+        pass
+
+    def predict(self, x):
+        pass
