@@ -10,17 +10,17 @@ class LinearModel(BaseStatModel):
         self.beta_hat = None
         self.intercept = None
 
-    def _pre_processing_x(self, x):
-        x = self.standardize(x)
-        return x
+    def _pre_processing_x(self, X):
+        X = self.standardize(X)
+        return X
 
     def train(self):
         raise NotImplementedError
 
-    def predict(self, x):
-        x = self._pre_processing_x(x)
-        x = np.insert(x, 0, 1, axis=1)
-        return x @ self.beta_hat
+    def predict(self, X):
+        X = self._pre_processing_x(X)
+        X = np.insert(X, 0, 1, axis=1)
+        return X @ self.beta_hat
 
     @property
     @lazy_method
@@ -83,19 +83,19 @@ class LinearModel(BaseStatModel):
 
 
 class LeastSquareModel(LinearModel):
-    def _pre_processing_x(self, x):
-        x = self.standardize(x)
-        x = np.insert(x, 0, 1, axis=1)
-        return x
+    def _pre_processing_x(self, X):
+        X = self.standardize(X)
+        X = np.insert(X, 0, 1, axis=1)
+        return X
 
     def train(self):
         x = self.train_x
         y = self.train_y
         self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
 
-    def predict(self, x):
-        x = self._pre_processing_x(x)
-        return x @ self.beta_hat
+    def predict(self, X):
+        X = self._pre_processing_x(X)
+        return X @ self.beta_hat
 
 
 class BestSubsetSelection(LinearModel):
@@ -104,12 +104,12 @@ class BestSubsetSelection(LinearModel):
         self.k = k
         self.select_column = None
 
-    def _pre_processing_x(self, x):
-        x = self.standardize(x)
-        x = np.insert(x, 0, 1, axis=1)
+    def _pre_processing_x(self, X):
+        X = self.standardize(X)
+        X = np.insert(X, 0, 1, axis=1)
         if self.select_column:
-            x = x[:, self.select_column]
-        return x
+            X = X[:, self.select_column]
+        return X
 
     def train(self):
         X_com = self.train_x
@@ -129,9 +129,9 @@ class BestSubsetSelection(LinearModel):
                 self.beta_hat = beta_hat
                 rss_min = rss
 
-    def predict(self, x):
-        x = self._pre_processing_x(x)
-        return x @ self.beta_hat
+    def predict(self, X):
+        X = self._pre_processing_x(X)
+        return X @ self.beta_hat
 
 
 class RidgeModel(LinearModel):

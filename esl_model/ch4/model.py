@@ -35,8 +35,8 @@ class LinearRegressionIndicatorMatrix(LeastSquareModel):
             return super()._pre_processing_y(y)
         return Y
 
-    def predict(self, x):
-        Y_hat = super().predict(x)
+    def predict(self, X):
+        Y_hat = super().predict(X)
         y = (Y_hat.argmax(axis=1)).reshape((-1, 1)) + 1
         return y
 
@@ -52,9 +52,9 @@ class LDAModel(LinearRegression):
     from page 106
     """
 
-    def _pre_processing_x(self, x):
-        x = self.standardize(x)
-        return x
+    def _pre_processing_x(self, X):
+        X = self.standardize(X)
+        return X
 
     def train(self):
         X = self.train_x
@@ -88,8 +88,8 @@ class LDAModel(LinearRegression):
         result = mu_k @ sigma_inv @ x.T - (mu_k @ sigma_inv @ mu_k.T)/2 + log(pi_k)
         return result
 
-    def predict(self, x):
-        X = self._pre_processing_x(x)
+    def predict(self, X):
+        X = self._pre_processing_x(X)
         N = X.shape[0]
         Y = np.zeros((N, self.K))
 
@@ -144,8 +144,8 @@ class QDAModel(LinearRegression):
                  ((x - mu_k) @ pinv(sigma_k, rcond=0) @ (x - mu_k).T)/2 + log(pi_k)
         return result
 
-    def predict(self, x):
-        X = self._pre_processing_x(x)
+    def predict(self, X):
+        X = self._pre_processing_x(X)
         N = X.shape[0]
         Y = np.zeros((N, self.K))
 
@@ -211,8 +211,8 @@ class LDAForComputation(LDAModel):
         D = np.diagflat(D_)
         self.A = np.power(LA.pinv(D), 0.5) @ U.T
 
-    def predict(self, x):
-        X = self._pre_processing_x(x)
+    def predict(self, X):
+        X = self._pre_processing_x(X)
         Y = np.zeros((X.shape[0], self.K))
         A = self.A
 
@@ -299,5 +299,5 @@ class LogisticRegression(LinearRegression):
     def train(self):
         pass
 
-    def predict(self, x):
+    def predict(self, X):
         pass

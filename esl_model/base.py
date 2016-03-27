@@ -90,8 +90,8 @@ class BaseStatModel:
         return self._raw_train_x.shape[1]
 
 
-    def _pre_processing_x(self, x):
-        return x
+    def _pre_processing_x(self, X: np.ndarray):
+        return X
 
     def _pre_processing_y(self, y):
         return y
@@ -103,11 +103,11 @@ class BaseStatModel:
     def train(self):
         raise NotImplementedError
 
-    def predict(self, x):
+    def predict(self, X: np.ndarray):
         raise NotImplementedError
 
-    def test(self, x, y):
-        y_hat = self.predict(x)
+    def test(self, X, y):
+        y_hat = self.predict(X)
         y = y.reshape((y.shape[0], 1))
         return Result(y_hat, y)
 
