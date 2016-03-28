@@ -134,3 +134,17 @@ def test_SAHeart_data_set(SAHeart_data):
     x, y, *_ = SAHeart_data
     assert x[1,2] == 4.41
     assert list(y[:4]) == [1, 1, 0, 1]
+
+
+def test_binary_logistic_regression(SAHeart_data):
+    train_x, train_y, *_ = SAHeart_data
+
+    from esl_model.ch4.model import BinaryLogisticRegression
+    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2)
+    # model.pre_processing()
+    model.train()
+    print(model.beta_hat)
+    print(model.error_rate)
+    print(model.y_hat[:5])
+
+    assert 0

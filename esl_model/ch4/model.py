@@ -317,8 +317,8 @@ class BinaryLogisticRegression(LinearRegression):
     def train(self):
         X = self.train_x
         y = self.train_y
-        # beta_10, beta_1
-        beta = np.zeros((self.p ,1))
+        # include intercept
+        beta = np.zeros((self.p+1, 1))
 
         iter_times = 0
         while True:
@@ -328,7 +328,7 @@ class BinaryLogisticRegression(LinearRegression):
             P = e_X / (1 + e_X)
 
             # W is a vector
-            W = np.diag(P @ (1 - P))
+            W = np.diag(P @ (1 - P).T)
 
             beta = beta + self.math.pinv((X.T * W) @ X) @ X.T @ (y - P)
 
@@ -336,8 +336,12 @@ class BinaryLogisticRegression(LinearRegression):
             if iter_times > self.max_iter:
                 break
 
+        self.beta_hat = beta
+
 
     def predict(self, X):
-        y = super().predict(X)
-        y[y==0] = 2
+        X = self._pre_processing_x(X)
+        y = X @ self.beta_hat
+        y[y>=0] = 1
+        y[y<0] = 0
         return y
