@@ -287,17 +287,57 @@ class ReducedRankLDAModel(LDAForComputation):
             self.A[l, :] = W_half @ V[:, l]
 
 
-class LogisticRegression(LinearRegression):
+class BinaryLogisticRegression(LinearRegression):
     """
     page 119.
     two class case
 
     ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/logit.pdf
     """
+    def __init__(self, *args, max_iter=500, **kwargs):
+        self.max_iter = max_iter
+        super().__init__(*args, **kwargs)
 
+    def _pre_processing_x(self, X):
+        X = super()._pre_processing_x(X)
+        X = np.insert(X, 0, [1], axis=1)
+        return X
+
+    def _pre_processing_y(self, y):
+        """
+        y_i -> 0, g_i = 2
+        y_i -> 1, g_i = 1
+        :param y:
+        :return:
+        """
+        y = super()._pre_processing_y(y)
+        y[y==2] = 0
+        return y
 
     def train(self):
-        pass
+        X = self.train_x
+        y = self.train_y
+        # beta_10, beta_1
+        beta = np.zeros((self.p ,1))
+
+        iter_times = 0
+        while True:
+            e_X = np.exp(X @ beta)
+
+            # N x 1
+            P = e_X / (1 + e_X)
+
+            # W is a vector
+            W = np.diag(P @ (1 - P))
+
+            beta = beta + self.math.pinv((X.T * W) @ X) @ X.T @ (y - P)
+
+            iter_times += 1
+            if iter_times > self.max_iter:
+                break
+
 
     def predict(self, X):
-        pass
+        y = super().predict(X)
+        y[y==0] = 2
+        return y

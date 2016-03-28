@@ -72,3 +72,6 @@ class VowelDataSet(BaseDataSet):
         self.test_x = test.values
 
         self.feature_names = list(train.columns)
+
+class SAHeartDataSet(BaseDataSet):
+    data_path = 'data/SAheart.data.csv'
