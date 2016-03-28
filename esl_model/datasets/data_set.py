@@ -1,7 +1,8 @@
+import pandas as pd
 from pandas import read_csv
 from os.path import join, dirname
 
-__all__ = ['ProstateDataSet', 'VowelDataSet']
+__all__ = ['ProstateDataSet', 'VowelDataSet', 'SAHeartDataSet']
 
 
 class BaseDataSet:
@@ -70,8 +71,22 @@ class VowelDataSet(BaseDataSet):
         test = test.drop(test.columns[0], axis=1)
         self.test_y = test.pop('y').values
         self.test_x = test.values
-
         self.feature_names = list(train.columns)
 
+
 class SAHeartDataSet(BaseDataSet):
+    """
+    There is not test data in this DataSet
+    """
+
     data_path = 'data/SAheart.data.csv'
+
+    def _process_data(self):
+        df = self.df
+        train = df.drop(df.columns[0], axis=1)
+        self.train_y = train.pop('chd').values
+        train['famhist'] = pd.Categorical(train['famhist']).codes
+
+        self.train_x = train.values
+        self.feature_names = list(train.columns)
+

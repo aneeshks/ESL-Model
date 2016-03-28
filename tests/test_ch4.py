@@ -13,6 +13,13 @@ def vowel_data():
     return data.return_all()
 
 
+@pytest.fixture
+def SAHeart_data():
+    from esl_model.datasets import SAHeartDataSet
+    data = SAHeartDataSet()
+    return data.return_all()
+
+
 def test_vowel_data():
     from esl_model.datasets import VowelDataSet
     data = VowelDataSet()
@@ -121,3 +128,9 @@ def test_RRLDA(vowel_data):
 
     assert digit_float(model.error_rate) == 0.350
     assert digit_float(te.error_rate) == 0.491
+
+
+def test_SAHeart_data_set(SAHeart_data):
+    x, y, *_ = SAHeart_data
+    assert x[1,2] == 4.41
+    assert list(y[:4]) == [1, 1, 0, 1]
