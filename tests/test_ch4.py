@@ -148,9 +148,9 @@ def test_binary_logistic_regression(SAHeart_data):
     print('yhat',model.y_hat[:5])
     print(model.std_err)
 
-    from sklearn.linear_model.logistic import LogisticRegression
-    l = LogisticRegression(multi_class='ovr')
-    l.fit(train_x, train_y)
-    print(l.intercept_, l.coef_)
-    print(sum((l.predict(train_x) - train_y)**2)/train_x.shape[0])
+    # from sklearn.linear_model.logistic import LogisticRegression
+    # l = LogisticRegression(multi_class='ovr')
+    # l.fit(train_x, train_y)
+    # print(l.intercept_, l.coef_)
+    # print(sum((l.predict(train_x) - train_y)**2)/train_x.shape[0])
     assert 0

@@ -317,21 +317,18 @@ class BinaryLogisticRegression(LinearRegression):
             e_X = np.exp(X @ beta)
 
             # N x 1
-            P = e_X / (1 + e_X)
+            self.P = e_X / (1 + e_X)
 
             # W is a vector
-            W = np.diagflat(P * (1 - P))
+            self.W = (self.P * (1 - self.P)).flatten()
 
-
-            beta = beta + self.math.pinv((X.T @ W) @ X) @ X.T @ (y - P)
+            beta = beta + self.math.pinv((X.T * self.W) @ X) @ X.T @ (y - self.P)
 
             iter_times += 1
             if iter_times > self.max_iter:
                 break
 
         self.beta_hat = beta
-        self.W = W
-        self.P = P
 
 
     def predict(self, X):
@@ -347,4 +344,4 @@ class BinaryLogisticRegression(LinearRegression):
         """
         ref: https://groups.google.com/d/msg/comp.soft-sys.stat.spss/Fv7Goxs_Bwk/ff0jCesG8REJ
         """
-        return self.math.pinv(self.train_x.T @ self.W @ self.train_x).diagonal() ** 0.5
+        return self.math.pinv(self.train_x.T * self.W @ self.train_x).diagonal() ** 0.5
