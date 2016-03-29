@@ -149,9 +149,4 @@ def test_binary_logistic_regression(SAHeart_data):
     print(model.std_err)
     print('z score', model.z_score)
 
-    # from sklearn.linear_model.logistic import LogisticRegression
-    # l = LogisticRegression(multi_class='ovr')
-    # l.fit(train_x, train_y)
-    # print(l.intercept_, l.coef_)
-    # print(sum((l.predict(train_x) - train_y)**2)/train_x.shape[0])
-    assert 0
+    assert digit_float(model.error_rate) == 0.268
