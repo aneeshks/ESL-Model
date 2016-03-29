@@ -344,5 +344,7 @@ class BinaryLogisticRegression(LinearRegression):
     def std_err(self):
         """
         ref: https://groups.google.com/d/msg/comp.soft-sys.stat.spss/Fv7Goxs_Bwk/ff0jCesG8REJ
+
+        intuitive formula find in : http://data.princeton.edu/wws509/notes/c3.pdf  page 10
         """
         return self.math.pinv(self.train_x.T * self.W @ self.train_x).diagonal() ** 0.5
