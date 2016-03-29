@@ -292,6 +292,8 @@ class BinaryLogisticRegression(LinearRegression):
     page 119.
     two class case
 
+    note that self.W is the second partial derivative.
+
     ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/logit.pdf
     """
     def __init__(self, *args, max_iter=500, **kwargs):
@@ -342,4 +344,7 @@ class BinaryLogisticRegression(LinearRegression):
 
     @property
     def std_err(self):
+        """
+        ref: https://groups.google.com/d/msg/comp.soft-sys.stat.spss/Fv7Goxs_Bwk/ff0jCesG8REJ
+        """
         return self.math.pinv(self.train_x.T @ self.W @ self.train_x).diagonal() ** 0.5
