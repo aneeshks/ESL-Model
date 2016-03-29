@@ -49,19 +49,19 @@ I try to make the code clean and simple so that people can understand the algori
 ..  code-block:: python
 
     class LeastSquareModel(LinearModel):
-        def _pre_processing_x(self, x):
-            x = self.standardize(x)
-            x = np.insert(x, 0, 1, axis=1)
-            return x
-    
+        def _pre_processing_x(self, X):
+            X = self.standardize(X)
+            X = np.insert(X, 0, 1, axis=1)
+            return X
+
         def train(self):
             x = self.train_x
             y = self.train_y
             self.beta_hat = self.math.inv(x.T @ x) @ x.T @ y
-    
-        def predict(self, x):
-            x = self._pre_processing_x(x)
-            return x @ self.beta_hat
+
+        def predict(self, X):
+            X = self._pre_processing_x(X)
+            return X @ self.beta_hat
 
 
 How to
