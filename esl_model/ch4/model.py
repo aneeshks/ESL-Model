@@ -301,7 +301,8 @@ class BinaryLogisticRegression(LinearRegression):
         super().__init__(*args, **kwargs)
 
     def _pre_processing_x(self, X):
-        X = super()._pre_processing_x(X)
+        # TODO: refactor that allow choose whether use standardizing
+        # X = super()._pre_processing_x(X)
         X = np.insert(X, 0, [1], axis=1)
         return X
 

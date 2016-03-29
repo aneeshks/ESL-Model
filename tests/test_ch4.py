@@ -147,6 +147,7 @@ def test_binary_logistic_regression(SAHeart_data):
     print(model.error_rate)
     print('yhat',model.y_hat[:5])
     print(model.std_err)
+    print('z score', model.z_score)
 
     # from sklearn.linear_model.logistic import LogisticRegression
     # l = LogisticRegression(multi_class='ovr')
