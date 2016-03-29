@@ -138,13 +138,19 @@ def test_SAHeart_data_set(SAHeart_data):
 
 def test_binary_logistic_regression(SAHeart_data):
     train_x, train_y, *_ = SAHeart_data
-
+    train_x = train_x[:, [1,2,4,8]]
     from esl_model.ch4.model import BinaryLogisticRegression
     model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2)
-    # model.pre_processing()
+    model.pre_processing()
     model.train()
     print(model.beta_hat)
     print(model.error_rate)
-    print(model.y_hat[:5])
+    print('yhat',model.y_hat[:5])
+    print(model.std_err)
 
+    from sklearn.linear_model.logistic import LogisticRegression
+    l = LogisticRegression(multi_class='ovr')
+    l.fit(train_x, train_y)
+    print(l.intercept_, l.coef_)
+    print(sum((l.predict(train_x) - train_y)**2)/train_x.shape[0])
     assert 0

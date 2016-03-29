@@ -42,7 +42,7 @@ class LinearModel(BaseStatModel):
     @property
     @lazy_method
     def z_score(self):
-        return self.beta_hat / self.std_err
+        return self.beta_hat.flatten() / self.std_err
 
     @property
     @lazy_method

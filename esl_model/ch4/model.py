@@ -303,16 +303,6 @@ class BinaryLogisticRegression(LinearRegression):
         X = np.insert(X, 0, [1], axis=1)
         return X
 
-    def _pre_processing_y(self, y):
-        """
-        y_i -> 0, g_i = 2
-        y_i -> 1, g_i = 1
-        :param y:
-        :return:
-        """
-        y = super()._pre_processing_y(y)
-        y[y==2] = 0
-        return y
 
     def train(self):
         X = self.train_x
@@ -328,15 +318,18 @@ class BinaryLogisticRegression(LinearRegression):
             P = e_X / (1 + e_X)
 
             # W is a vector
-            W = np.diag(P @ (1 - P).T)
+            W = np.diagflat(P * (1 - P))
 
-            beta = beta + self.math.pinv((X.T * W) @ X) @ X.T @ (y - P)
+
+            beta = beta + self.math.pinv((X.T @ W) @ X) @ X.T @ (y - P)
 
             iter_times += 1
             if iter_times > self.max_iter:
                 break
 
         self.beta_hat = beta
+        self.W = W
+        self.P = P
 
 
     def predict(self, X):
@@ -345,3 +338,8 @@ class BinaryLogisticRegression(LinearRegression):
         y[y>=0] = 1
         y[y<0] = 0
         return y
+
+
+    @property
+    def std_err(self):
+        return self.math.pinv(self.train_x.T @ self.W @ self.train_x).diagonal() ** 0.5
