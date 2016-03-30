@@ -12,6 +12,6 @@ before_install:
   - "pip install tox"
 
 install:
-  - "pip install ."
+#  - "pip install ."
 
-script: tox
+script: python -c 'import numpy; print numpy.version.version'
