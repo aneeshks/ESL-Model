@@ -12,7 +12,6 @@ class BaseDataSet:
     multi_data = False
 
     def __init__(self, select_features=None):
-        self.data = None
         self._train_x = None
         self._train_y = None
         self._test_x = None
