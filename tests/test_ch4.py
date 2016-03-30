@@ -25,6 +25,13 @@ def test_vowel_data():
     data = VowelDataSet()
     assert list(data.train_y[:5]) == list(range(1,6))
 
+    data.select_features = data.feature_names[:2]
+    assert np.array_equal(data.train_x[:1], data._train_x.iloc[:1, :2].values)
+
+    ft = list(range(3))
+    data.select_features = ft
+    assert np.array_equal(data.train_x[:1], data._train_x.iloc[:1, ft].values)
+
 
 def test_indicator_matrix(vowel_data):
     from esl_model.ch4.model import LinearRegressionIndicatorMatrix
