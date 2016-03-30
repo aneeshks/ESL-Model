@@ -9,5 +9,6 @@ python:
 
 before_install:
   - "pip install --upgrade pip"
+  - "pip install tox"
 
-script: py.test
+script: tox
