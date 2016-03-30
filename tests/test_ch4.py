@@ -144,9 +144,12 @@ def test_SAHeart_data_set(SAHeart_data):
 
 
 def test_binary_logistic_regression(SAHeart_data):
-    train_x, train_y, *_ = SAHeart_data
-    train_x = train_x[:, [1,2,4,8]]
+    from esl_model.datasets import SAHeartDataSet
+    data = SAHeartDataSet(select_features=[1, 2, 4, 8])
     from esl_model.ch4.model import BinaryLogisticRegression
+    train_x = data.train_x
+    train_y = data.train_y
+
     model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2)
     model.pre_processing()
     model.train()
