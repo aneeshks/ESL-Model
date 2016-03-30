@@ -156,7 +156,27 @@ def test_binary_logistic_regression(SAHeart_data):
     print(model.beta_hat)
     print(model.error_rate)
     print('yhat',model.y_hat[:5])
-    print(model.std_err)
+    print(repr(model.std_err))
     print('z score', model.z_score)
 
+    eq_beta_hat = np.array([[-4.20427542],
+                        [0.08070059],
+                        [0.16758415],
+                        [0.92411669],
+                        [0.04404247]])
+
+    eq_std_err = np.array([ 0.498348  ,  0.02551477,  0.05418979,  0.22318295,  0.00974321])
+
+
+    assert np.allclose(model.beta_hat, eq_beta_hat)
     assert digit_float(model.error_rate) == 0.268
+    assert np.allclose(model.std_err, eq_std_err)
+
+    data = SAHeartDataSet(select_features=[0, 1, 2, 4, 6, 7, 8])
+    train_x = data.train_x
+    train_y = data.train_y
+    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2, do_standardization=False)
+    model.pre_processing()
+    model.train()
+
+    assert digit_float(model.error_rate) == 0.271
