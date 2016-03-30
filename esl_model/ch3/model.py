@@ -5,8 +5,8 @@ from itertools import combinations
 
 
 class LinearModel(BaseStatModel):
-    def __init__(self, train_x, train_y, features_name=None):
-        super().__init__(train_x, train_y, features_name)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.beta_hat = None
         self.intercept = None
 

@@ -49,7 +49,7 @@ class Result:
 
 
 class BaseStatModel:
-    def __init__(self, train_x: np.ndarray, train_y: np.ndarray, features_name=None):
+    def __init__(self, train_x: np.ndarray, train_y: np.ndarray, features_name=None, do_standardization=True):
         # ensure that train_y is (N x 1)
         train_y = train_y.reshape((train_y.shape[0], 1))
         self.train_x = train_x
@@ -58,10 +58,14 @@ class BaseStatModel:
         self.train_y = train_y
         self.features_name = features_name
 
+        self.do_standardization = do_standardization
         self._x_std_ = None
         self._x_mean_ = None
 
     def standardize(self, x, axis=0, with_mean=True, with_std=True):
+        if not self.do_standardization:
+            return x
+
         if getattr(self, '_x_std_', None) is None or getattr(self, '_x_mean_', None) is None:
             self._x_mean_ = x.mean(axis=axis)
             self._x_std_ = x.std(axis=axis, ddof=1)

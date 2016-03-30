@@ -150,7 +150,7 @@ def test_binary_logistic_regression(SAHeart_data):
     train_x = data.train_x
     train_y = data.train_y
 
-    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2)
+    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2, do_standardization=False)
     model.pre_processing()
     model.train()
     print(model.beta_hat)

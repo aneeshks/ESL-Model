@@ -293,6 +293,7 @@ class BinaryLogisticRegression(LinearRegression):
     two class case
 
     note that self.W is the second partial derivative.
+    To get the same std.Err with book, you should set `do_standardization=False`
 
     ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/logit.pdf
     """
@@ -301,8 +302,7 @@ class BinaryLogisticRegression(LinearRegression):
         super().__init__(*args, **kwargs)
 
     def _pre_processing_x(self, X):
-        # TODO: refactor that allow choose whether use standardizing
-        # X = super()._pre_processing_x(X)
+        X = super()._pre_processing_x(X)
         X = np.insert(X, 0, [1], axis=1)
         return X
 
