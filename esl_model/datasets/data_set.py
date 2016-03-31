@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from pandas import read_csv
 from os.path import join, dirname
 
@@ -109,7 +108,6 @@ class SAHeartDataSet(BaseDataSet):
     """
     There is not test data in this DataSet
     """
-
     data_path = 'data/SAheart.data.csv'
 
     def _process_data(self):
@@ -123,4 +121,3 @@ class SAHeartDataSet(BaseDataSet):
 
         # empty test data set
         self._test_x = self._test_y = pd.DataFrame()
-
