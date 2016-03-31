@@ -145,7 +145,7 @@ class RidgeModel(LinearModel):
         y = self.train_y
         if self.solve == 'svd':
             u, d, vt = self.math.svd(X, full_matrices=False)
-            ds = (d / (d**2 + self.alpha)).reshape((-1,1))
+            ds = (d / (d**2 + self.alpha)).reshape((-1, 1))
             self.beta_hat = vt.T @ (ds * (u.T @ y))
 
         elif self.solve == 'raw':
