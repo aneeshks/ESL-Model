@@ -23,7 +23,7 @@ def SAHeart_data():
 def test_vowel_data():
     from esl_model.datasets import VowelDataSet
     data = VowelDataSet()
-    assert list(data.train_y[:5]) == list(range(1,6))
+    assert list(data.train_y[:5]) == list(range(1, 6))
 
     data.select_features = data.feature_names[:2]
     assert np.array_equal(data.train_x[:1], data._train_x.iloc[:1, :2].values)
@@ -42,7 +42,7 @@ def test_indicator_matrix(vowel_data):
     lrm.pre_processing()
     lrm.train()
     print(lrm.error_rate)
-    test_result= lrm.test(test_x, test_y)
+    test_result = lrm.test(test_x, test_y)
     print(test_result.error_rate)
 
     assert digit_float(lrm.error_rate) == 0.477
@@ -93,8 +93,6 @@ def test_RDA(vowel_data):
     model.pre_processing()
     model.train()
 
-
-
     print(model.error_rate)
     te = model.test(test_x, test_y)
     print(te.error_rate)
@@ -139,7 +137,7 @@ def test_RRLDA(vowel_data):
 
 def test_SAHeart_data_set(SAHeart_data):
     x, y, *_ = SAHeart_data
-    assert x[1,2] == 4.41
+    assert x[1, 2] == 4.41
     assert list(y[:4]) == [1, 1, 0, 1]
 
 
@@ -155,7 +153,7 @@ def test_binary_logistic_regression(SAHeart_data):
     model.train()
     print(model.beta_hat)
     print(model.error_rate)
-    print('yhat',model.y_hat[:5])
+    print('yhat', model.y_hat[:5])
     print(repr(model.std_err))
     print('z score', model.z_score)
 
@@ -165,7 +163,7 @@ def test_binary_logistic_regression(SAHeart_data):
                         [0.92411669],
                         [0.04404247]])
 
-    eq_std_err = np.array([ 0.498348  ,  0.02551477,  0.05418979,  0.22318295,  0.00974321])
+    eq_std_err = np.array([0.498348, 0.02551477, 0.05418979, 0.22318295, 0.00974321])
 
 
     assert np.allclose(model.beta_hat, eq_beta_hat)
