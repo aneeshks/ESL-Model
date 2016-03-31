@@ -71,6 +71,10 @@ I also write some article describe how to write some algorithm.
 How to write Reduced Rank LDA   
     http://littlezz.github.io/how-to-write-reduced-rank-linear-discriminant-analysis-with-python.html
 
+How to use travis with numpy and pytest
+    http://littlezz.github.io/travis-ci-with-numpy-and-pytest.html
+
+
 
 Install
 -------
