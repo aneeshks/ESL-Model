@@ -1,5 +1,4 @@
 from math import log
-
 from ..ch3.model import LeastSquareModel, LinearModel
 import numpy as np
 from numpy import linalg as LA
@@ -43,7 +42,7 @@ class LinearRegressionIndicatorMatrix(LeastSquareModel):
     @property
     @lazy_method
     def error_rate(self):
-        return (1 - np.sum((self._raw_train_y == self.y_hat)) / self.N)
+        return 1 - np.sum((self._raw_train_y == self.y_hat)) / self.N
 
 
 class LDAModel(LinearRegression):
@@ -140,8 +139,8 @@ class QDAModel(LinearRegression):
         pinv = self.math.pinv
 
         # assume that each row of x contain observation
-        result = -(np.log(np.linalg.det(sigma_k)))/2 - \
-                 ((x - mu_k) @ pinv(sigma_k, rcond=0) @ (x - mu_k).T)/2 + log(pi_k)
+        result = -(np.log(np.linalg.det(sigma_k)))/2 \
+                 - ((x - mu_k) @ pinv(sigma_k, rcond=0) @ (x - mu_k).T)/2 + log(pi_k)
         return result
 
     def predict(self, X):
@@ -187,7 +186,6 @@ class RDAModel(QDAModel):
         for k in range(K):
             mask = (y == k+1)
             N_k = sum(mask)
-
             X_k = X[mask.flatten(), :]
 
             self.Pi[k] = N_k / self.N
