@@ -297,15 +297,14 @@ class BinaryLogisticRegression(LinearRegression):
 
     ref: http://sites.stat.psu.edu/~jiali/course/stat597e/notes2/logit.pdf
     """
-    def __init__(self, *args, max_iter=500, **kwargs):
+    def __init__(self, *args, max_iter=300, **kwargs):
         self.max_iter = max_iter
         super().__init__(*args, **kwargs)
 
     def _pre_processing_x(self, X):
-        X = super()._pre_processing_x(X)
+        X = self.standardize(X)
         X = np.insert(X, 0, [1], axis=1)
         return X
-
 
     def train(self):
         X = self.train_x
@@ -316,13 +315,11 @@ class BinaryLogisticRegression(LinearRegression):
         iter_times = 0
         while True:
             e_X = np.exp(X @ beta)
-
             # N x 1
             self.P = e_X / (1 + e_X)
-
             # W is a vector
             self.W = (self.P * (1 - self.P)).flatten()
-
+            # X.T * W equal (X.T @ diagflat(W)).diagonal()
             beta = beta + self.math.pinv((X.T * self.W) @ X) @ X.T @ (y - self.P)
 
             iter_times += 1
@@ -331,14 +328,12 @@ class BinaryLogisticRegression(LinearRegression):
 
         self.beta_hat = beta
 
-
     def predict(self, X):
         X = self._pre_processing_x(X)
         y = X @ self.beta_hat
-        y[y>=0] = 1
-        y[y<0] = 0
+        y[y >= 0] = 1
+        y[y < 0] = 0
         return y
-
 
     @property
     def std_err(self):
