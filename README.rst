@@ -5,8 +5,8 @@ ESLModels
 
 Algorithm from The Elements of Statistical Learning book implement by Python 3 code.
 
-Until now, I finish chapter 3.
-I am working on chapter 4.
+Until now, I finish chapter 3, 4.
+I am working on chapter 7.
 
 The Algorithm model is placed in ``esl_model.chx.model``, ``x`` means the number of chapter, for example,  ``esl_model.ch3.model`` 
 
