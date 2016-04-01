@@ -5,6 +5,10 @@ from numpy import linalg as LA
 from ..utils import lazy_method
 
 
+__all__ = ['LinearRegressionIndicatorMatrix', 'LDAModel', 'QDAModel', 'RDAModel', 'LDAForComputation',
+           'ReducedRankLDAModel', 'BinaryLogisticRegression']
+
+
 class LinearRegression(LinearModel):
     def __init__(self, *args, **kwargs):
         self.K = kwargs.pop('K', 1)

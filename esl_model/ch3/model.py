@@ -4,6 +4,10 @@ from ..utils import lazy_method
 from itertools import combinations
 
 
+__all__ = ['LeastSquareModel', 'BestSubsetSelection', 'RidgeModel', 'LassoLARModel', 'PrincipalComponentsRegression',
+           'PartialLeastSquare', 'IFSRModel']
+
+
 class LinearModel(BaseStatModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
