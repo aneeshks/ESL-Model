@@ -17,7 +17,7 @@ class LinearRegression(LinearModel):
     @property
     @lazy_method
     def error_rate(self):
-        return 1 - np.sum((self._raw_train_y == self.y_hat))/ self.N
+        return 1 - np.sum((self._raw_train_y == self.y_hat)) / self.N
 
 
 class LinearRegressionIndicatorMatrix(LeastSquareModel):
