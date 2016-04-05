@@ -1,5 +1,5 @@
 from math import log
-from ..ch3.model import LeastSquareModel, LinearModel
+from ..ch3.models import LeastSquareModel, LinearModel
 import numpy as np
 from numpy import linalg as LA
 from ..utils import lazy_method

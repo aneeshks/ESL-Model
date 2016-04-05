@@ -8,14 +8,14 @@ Algorithm from The Elements of Statistical Learning book implement by Python 3 c
 Until now, I finish chapter 3, 4.
 I am working on chapter 7.
 
-The Algorithm model is placed in ``esl_model.chx.model``, ``x`` means the number of chapter, for example,  ``esl_model.ch3.model`` 
+The Algorithm model is placed in ``esl_model.chx.models``, ``x`` means the number of chapter, for example,  ``esl_model.ch3.models``
 
 To run the code, you must install Python >= 3.5, because I use ``@`` operate instead of ``numpy.dot``. See `pep-0465 <https://www.python.org/dev/peps/pep-0465/>`_
 
 
 ..  code-block:: python
     
-    from esl_model.ch3.model import LeastSquareModel
+    from esl_model.ch3.models import LeastSquareModel
     
     # import prostate data set
     from esl_model.datasets import ProstateDataSet
@@ -42,7 +42,7 @@ To run the code, you must install Python >= 3.5, because I use ``@`` operate ins
     print(test_result.std_error)
 
 
-You can find the source in ``esl_model.ch3.model``  
+You can find the source in ``esl_model.ch3.models``
 
 I try to make the code clean and simple so that people can understand the algorithm easily.
  
