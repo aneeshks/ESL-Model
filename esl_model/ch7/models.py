@@ -9,11 +9,14 @@ class BaseCV:
     # name that model use. ex, PCR use `m`, Ridge use `alpha`.
     _cv_field_name = 'alpha'
 
-    def __init__(self, train_x, train_y, features_name=None, do_standardization=True, k_folds=10, **kwargs):
+    def __init__(self, train_x, train_y, features_name=None, do_standardization=True,
+                 k_folds=10, alphas=None, **kwargs):
         self.train_x = train_x
         self.train_y = train_y
         self.k_folds = k_folds
+        self.alphas = alphas
         self.kwargs = kwargs
+
         self.kwargs['features_name'] = features_name
         self.kwargs['do_standardization'] = do_standardization
 
@@ -49,7 +52,7 @@ class BaseCV:
         return model.test(cv_x, cv_y).mse
 
     def train(self):
-        alphas = self._get_cv_alphas()
+        alphas = self.alphas
         alpha_errs = np.zeros((len(alphas), 1)).flatten()
         for idx, alpha in enumerate(alphas):
             err = 0
@@ -66,9 +69,9 @@ class BaseCV:
                 model.train()
 
                 err += self._model_test(model, cv_x, cv_y)
-            alpha_errs[idx] = err
+            alpha_errs[idx] = err / self.train_x.shape[0]
 
-        self.best_alpha = np.max(alpha_errs)
+        self.best_alpha = alphas[alpha_errs.argmin()]
         self.alpha_errs = alpha_errs
 
         kwargs = self.kwargs.copy()
