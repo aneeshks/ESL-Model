@@ -1,7 +1,7 @@
 """Apply K-folds CV for some model define in ch3 and ch4.
 """
 
-from ..ch3.models import LinearModel, RidgeModel
+from ..ch3.models import LinearModel, RidgeModel, PrincipalComponentsRegression
 import numpy as np
 
 class BaseCV:
@@ -89,3 +89,8 @@ class BaseCV:
 
 class RidgeCV(BaseCV):
     _bound_model = RidgeModel
+
+
+class PCRCV(BaseCV):
+    _bound_model = PrincipalComponentsRegression
+    _cv_field_name = 'm'

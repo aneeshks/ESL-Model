@@ -24,3 +24,19 @@ def test_ridge_cv(prostate_data):
     test_error = r.test(test_x, test_y).mse
     print(test_error)
     assert digit_float(test_error) == 0.492
+
+
+def test_pcr_cv(prostate_data):
+    from esl_model.ch7.models import PCRCV
+    train_x, train_y, test_x, test_y, features = prostate_data
+
+    alphas = np.arange(4,8)
+    cv = PCRCV(train_x, train_y, alphas=alphas)
+    cv.pre_processing()
+    cv.train()
+
+    print('best alpha', cv.best_alpha)
+    print(cv.alpha_errs)
+    test_error = cv.test(test_x, test_y).mse
+    print(test_error)
+    assert 0
