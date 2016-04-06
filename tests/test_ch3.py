@@ -71,8 +71,8 @@ def test_ridge(prostate_data):
     target_df = 5
     min_df = 9999999999999999
     best_alpha = None
-    for i in range(1, 1000):
-        alpha = i/40
+    for i in np.arange(21, 24, 0.025):
+        alpha = i
         r = RidgeModel(train_x=train_x, train_y=train_y, alpha=alpha, solve='raw')
         r.pre_processing()
 
