@@ -11,9 +11,12 @@ def prostate_data():
 
 def test_ridge_cv(prostate_data):
     from esl_model.ch7.models import RidgeCV
+    from esl_model.math_utils import solve_df_lambda
+    from esl_model.ch3.models import RidgeModel
     train_x, train_y, test_x, test_y, features = prostate_data
 
-    alphas = np.arange(0, 80, 1)
+    alphas = solve_df_lambda(train_x)
+    print('input alphas', alphas)
     r = RidgeCV(train_x, train_y, alphas=alphas)
     r.pre_processing()
     r.train()
@@ -36,6 +39,7 @@ def test_ridge_cv(prostate_data):
     # m = RidgeCV(cv=10, alphas=alphas)
     # m.fit(train_x, train_y)
     # print(m.alpha_)
+    print()
     assert 0
 
 
@@ -63,3 +67,19 @@ def test_pcr_cv(prostate_data):
     #     p.train()
     #     print(p.test(train_x, train_y).mse, end=',')
     assert 0
+
+
+def test_df_solve(prostate_data):
+    train_x, train_y, test_x, test_y, features = prostate_data
+    from esl_model.math_utils import solve_df_lambda
+    from esl_model.ch3.models import RidgeModel
+
+    lams = solve_df_lambda(train_x)
+    print(lams)
+    dfs = []
+    for i in range(train_x.shape[1]+1):
+        r = RidgeModel(train_x, train_y, alpha=lams[i])
+        r.pre_processing()
+        dfs.append(r.df)
+
+    assert np.allclose(dfs, np.arange(0, 9))

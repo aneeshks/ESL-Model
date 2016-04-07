@@ -125,7 +125,7 @@ class BaseCV:
 
 class RidgeCV(BaseCV):
     _bound_model = RidgeModel
-    _inc_regularization_direction = DIRECTION_RIGHT
+    _inc_regularization_direction = DIRECTION_LEFT
 
 
 class PCRCV(BaseCV):
