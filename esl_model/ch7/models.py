@@ -4,10 +4,16 @@
 from ..ch3.models import LinearModel, RidgeModel, PrincipalComponentsRegression
 import numpy as np
 
+
+DIRECTION_LEFT = 'left'
+DIRECTION_RIGHT = 'right'
+
+
 class BaseCV:
     _bound_model = None
     # name that model use. ex, PCR use `m`, Ridge use `alpha`.
     _cv_field_name = 'alpha'
+    _inc_regularization_direction = DIRECTION_LEFT
 
     def __init__(self, train_x, train_y, features_name=None, do_standardization=True,
                  k_folds=10, alphas=None, **kwargs):
@@ -23,26 +29,9 @@ class BaseCV:
     def pre_processing(self):
         """Provide same API as Model, we split data to K folds here.
         """
-        # `//` make result is int
-        # self._x = self.train_x.copy()
-        # np.random.shuffle(self.train_y)
-        # fold_size = self.train_x.shape[0] // self.k_folds
-        # residue_item = self.train_x.shape[0] - fold_size * self.k_folds
-
         self.x_folds = [self.train_x[i::self.k_folds] for i in range(0, self.k_folds)]
         self.y_folds = [self.train_y[i::self.k_folds] for i in range(0, self.k_folds)]
         print('now', len(self.x_folds))
-        # if residue_item:
-        #     residue_x = self.train_x[-residue_item:]
-        #     residue_y = self.train_y[-residue_item:]
-        #     for i in range(self.k_folds):
-        #         self.x_folds[i] = np.append(self.x_folds[i], residue_x, axis=0)
-        #         self.y_folds[i] = np.append(self.y_folds[i], residue_y, axis=0)
-
-        # self.train_x = self._x
-
-    def _get_cv_alphas(self):
-        raise NotImplemented
 
     @staticmethod
     def combine_train_folds(folds, exclude):
@@ -58,10 +47,22 @@ class BaseCV:
         return model.test(cv_x, cv_y).mse
 
     def train(self):
+        """
+        calculate cv error and cv std error, then use one standard error to choose best alpha.
+
+        reference
+        -----------
+        http://www.stat.cmu.edu/~ryantibs/datamining/lectures/19-val2-marked.pdf
+        http://www.stat.cmu.edu/~ryantibs/datamining/lectures/18-val1-marked.pdf
+        """
+
         alphas = self.alphas
         alpha_errs = np.zeros((len(alphas), 1)).flatten()
+        alpha_std_errs = np.zeros((len(alphas), 1)).flatten()
+
         for idx, alpha in enumerate(alphas):
             err = np.zeros((self.k_folds, 1)).flatten()
+            foldwise_err = np.zeros((self.k_folds, 1)).flatten()
 
             for k in range(self.k_folds):
                 train_x = self.combine_train_folds(self.x_folds, exclude=k)
@@ -75,14 +76,40 @@ class BaseCV:
                 model.pre_processing()
                 model.train()
 
+                foldwise_err[k] = self._model_test(model, cv_x, cv_y)
                 err[k] = self._model_test(model, cv_x, cv_y) * cv_x.shape[0]
-            # std_err = (np.var(err) **0.5) / (self.k_folds**0.5)
-            print('err vector', repr(err))
-            std_err = sum(err) / (self.train_x.shape[0])
-            alpha_errs[idx] = std_err
 
-        self.best_alpha = alphas[alpha_errs.argmin()]
+            std_err = (np.var(foldwise_err) **0.5) / (self.k_folds**0.5)
+            tot_err = sum(err) / (self.train_x.shape[0])
+            alpha_std_errs[idx] = std_err
+            alpha_errs[idx] = tot_err
+
+        # use one standard error rule to find best alpha
+        alpha_hat_idx =  alpha_errs.argmin()
+        # we move alpha for cease the (cv)_alpha <= (cv)_alpha_hat + (cv_std)_alpha_hat
+        cv_hat = alpha_errs[alpha_hat_idx] + alpha_std_errs[alpha_hat_idx]
+
+        if self._inc_regularization_direction is DIRECTION_LEFT:
+            move_direction = reversed(range(0, alpha_hat_idx+1))
+        else:
+            move_direction = range(alpha_hat_idx, len(alphas))
+
+        print('alphas len', len(alphas))
+        print('alpha_hat idx', alpha_hat_idx)
+        print('cv hat', cv_hat)
+
+        self.best_alpha = -1
+        # find the best_alpha
+        last_idx = None
+        for idx in move_direction:
+            if alpha_errs[idx] > cv_hat:
+                self.best_alpha = alphas[last_idx]
+                break
+            last_idx = idx
+
+
         self.alpha_errs = alpha_errs
+        self.alpha_std_errs = alpha_std_errs
         kwargs = self.kwargs.copy()
         kwargs[self._cv_field_name] = self.best_alpha
         model = self._bound_model(self.train_x, self.train_y, **kwargs)
@@ -98,8 +125,10 @@ class BaseCV:
 
 class RidgeCV(BaseCV):
     _bound_model = RidgeModel
+    _inc_regularization_direction = DIRECTION_RIGHT
 
 
 class PCRCV(BaseCV):
     _bound_model = PrincipalComponentsRegression
     _cv_field_name = 'm'
+    _inc_regularization_direction = DIRECTION_LEFT
