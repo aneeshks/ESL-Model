@@ -24,16 +24,22 @@ class BaseCV:
         """Provide same API as Model, we split data to K folds here.
         """
         # `//` make result is int
+        # self._x = self.train_x.copy()
+        # np.random.shuffle(self.train_y)
         fold_size = self.train_x.shape[0] // self.k_folds
-        self.x_folds = [self.train_x[i: i+fold_size] for i in range(0, len(self.train_x), fold_size)]
-        self.y_folds = [self.train_y[i: i+fold_size] for i in range(0, len(self.train_y), fold_size)]
+        residue_item = self.train_x.shape[0] - fold_size * self.k_folds
 
-        if len(self.x_folds[-1]) != fold_size:
-            residue_x = self.x_folds.pop(-1)
-            residue_y = self.y_folds.pop(-1)
+        self.x_folds = [self.train_x[i: i+fold_size] for i in range(0, fold_size * self.k_folds, fold_size)]
+        self.y_folds = [self.train_y[i: i+fold_size] for i in range(0, fold_size * self.k_folds, fold_size)]
+        print('now', len(self.x_folds))
+        if residue_item:
+            residue_x = self.train_x[-residue_item:]
+            residue_y = self.train_y[-residue_item:]
             for i in range(self.k_folds):
                 self.x_folds[i] = np.append(self.x_folds[i], residue_x, axis=0)
                 self.y_folds[i] = np.append(self.y_folds[i], residue_y, axis=0)
+
+        # self.train_x = self._x
 
     def _get_cv_alphas(self):
         raise NotImplemented
@@ -55,7 +61,8 @@ class BaseCV:
         alphas = self.alphas
         alpha_errs = np.zeros((len(alphas), 1)).flatten()
         for idx, alpha in enumerate(alphas):
-            err = 0
+            err = np.zeros((self.k_folds, 1)).flatten()
+
             for k in range(self.k_folds):
                 train_x = self.combine_train_folds(self.x_folds, exclude=k)
                 train_y = self.combine_train_folds(self.y_folds, exclude=k)
@@ -68,12 +75,14 @@ class BaseCV:
                 model.pre_processing()
                 model.train()
 
-                err += self._model_test(model, cv_x, cv_y)
-            alpha_errs[idx] = err / self.train_x.shape[0]
+                err[k] = self._model_test(model, cv_x, cv_y) * cv_x.shape[0]
+            # std_err = (np.var(err) **0.5) / (self.k_folds**0.5)
+            print('err vector', repr(err))
+            std_err = sum(err) / (len(self.x_folds[0]) * self.k_folds)
+            alpha_errs[idx] = std_err
 
         self.best_alpha = alphas[alpha_errs.argmin()]
         self.alpha_errs = alpha_errs
-
         kwargs = self.kwargs.copy()
         kwargs[self._cv_field_name] = self.best_alpha
         model = self._bound_model(self.train_x, self.train_y, **kwargs)

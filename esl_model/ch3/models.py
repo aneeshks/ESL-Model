@@ -179,7 +179,7 @@ class PrincipalComponentsRegression(LinearModel):
     def __init__(self, *args, **kwargs):
         m = kwargs.pop('m', None)
         super().__init__(*args, **kwargs)
-        self.m = m or self.p
+        self.m = m if m is not None else self.p
 
     def transform_z(self, X):
         U, D, Vt = self.math.svd(X, full_matrices=False)
