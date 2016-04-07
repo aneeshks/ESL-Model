@@ -26,18 +26,18 @@ class BaseCV:
         # `//` make result is int
         # self._x = self.train_x.copy()
         # np.random.shuffle(self.train_y)
-        fold_size = self.train_x.shape[0] // self.k_folds
-        residue_item = self.train_x.shape[0] - fold_size * self.k_folds
+        # fold_size = self.train_x.shape[0] // self.k_folds
+        # residue_item = self.train_x.shape[0] - fold_size * self.k_folds
 
-        self.x_folds = [self.train_x[i: i+fold_size] for i in range(0, fold_size * self.k_folds, fold_size)]
-        self.y_folds = [self.train_y[i: i+fold_size] for i in range(0, fold_size * self.k_folds, fold_size)]
+        self.x_folds = [self.train_x[i::self.k_folds] for i in range(0, self.k_folds)]
+        self.y_folds = [self.train_y[i::self.k_folds] for i in range(0, self.k_folds)]
         print('now', len(self.x_folds))
-        if residue_item:
-            residue_x = self.train_x[-residue_item:]
-            residue_y = self.train_y[-residue_item:]
-            for i in range(self.k_folds):
-                self.x_folds[i] = np.append(self.x_folds[i], residue_x, axis=0)
-                self.y_folds[i] = np.append(self.y_folds[i], residue_y, axis=0)
+        # if residue_item:
+        #     residue_x = self.train_x[-residue_item:]
+        #     residue_y = self.train_y[-residue_item:]
+        #     for i in range(self.k_folds):
+        #         self.x_folds[i] = np.append(self.x_folds[i], residue_x, axis=0)
+        #         self.y_folds[i] = np.append(self.y_folds[i], residue_y, axis=0)
 
         # self.train_x = self._x
 
@@ -78,7 +78,7 @@ class BaseCV:
                 err[k] = self._model_test(model, cv_x, cv_y) * cv_x.shape[0]
             # std_err = (np.var(err) **0.5) / (self.k_folds**0.5)
             print('err vector', repr(err))
-            std_err = sum(err) / (len(self.x_folds[0]) * self.k_folds)
+            std_err = sum(err) / (self.train_x.shape[0])
             alpha_errs[idx] = std_err
 
         self.best_alpha = alphas[alpha_errs.argmin()]
