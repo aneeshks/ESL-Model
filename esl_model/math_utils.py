@@ -19,6 +19,10 @@ def solve_df_lambda(X: np.ndarray, dimension=None, epsilon=1e-3, do_standardizat
     Using Newton Method to solve df(lambda) = k, k in [1..p]
     :param X:
     :return: list of lambda
+
+    ref
+    ----
+    https://en.wikipedia.org/wiki/Newton%27s_method
     """
     if dimension is None:
         dimension = X.shape[1]

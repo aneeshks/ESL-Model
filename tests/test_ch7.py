@@ -30,15 +30,17 @@ def test_ridge_cv(prostate_data):
     # assert digit_float(test_error) == 0.492
 
     # from esl_model.ch3.models import RidgeModel
-    # m = RidgeModel(train_x, train_y, alpha=7.75)
-    # m.pre_processing()
+    m = RidgeModel(train_x, train_y, alpha=7.75)
+    m.pre_processing()
+    x = m.train_x
     # m.train()
     # print(m.test(test_x, test_y).mse)
     # assert 0
-    # from sklearn.linear_model.ridge import RidgeCV
-    # m = RidgeCV(cv=10, alphas=alphas)
-    # m.fit(train_x, train_y)
-    # print(m.alpha_)
+    from sklearn.linear_model.ridge import RidgeCV
+    from sklearn.preprocessing import scale
+    m = RidgeCV(cv=10, alphas=alphas[1:])
+    m.fit(x, train_y)
+    print(m.alpha_)
     print()
     assert 0
 
