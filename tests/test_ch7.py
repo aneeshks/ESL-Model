@@ -13,8 +13,14 @@ def test_ridge_cv(prostate_data):
     from esl_model.ch7.models import RidgeCV
     from esl_model.math_utils import solve_df_lambda
     from esl_model.ch3.models import RidgeModel
+    from sklearn.preprocessing import scale
     train_x, train_y, test_x, test_y, features = prostate_data
 
+    # m = RidgeModel(train_x, train_y, alpha=7.75)
+    # m.pre_processing()
+    # train_x = m.train_x
+    # train_x = scale(train_x)
+    # train_y = train_y - np.mean(train_y)
     alphas = solve_df_lambda(train_x)
     print('input alphas', alphas)
     r = RidgeCV(train_x, train_y, alphas=alphas)
@@ -25,7 +31,7 @@ def test_ridge_cv(prostate_data):
     print('best alpha', r.best_alpha)
     test_error = r.test(test_x, test_y).mse
     print(test_error)
-    print('alpha errs', r.alpha_errs)
+    print('alpha errs', repr(r.alpha_errs))
     print('alpha std errs', r.alpha_std_errs)
     # assert digit_float(test_error) == 0.492
 
@@ -41,7 +47,7 @@ def test_ridge_cv(prostate_data):
     m = RidgeCV(cv=10, alphas=alphas[1:])
     m.fit(x, train_y)
     print(m.alpha_)
-    print()
+    print('len', len(r.x_folds[3]))
     assert 0
 
 

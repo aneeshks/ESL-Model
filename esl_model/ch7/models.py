@@ -79,7 +79,8 @@ class BaseCV:
                 foldwise_err[k] = self._model_test(model, cv_x, cv_y)
                 err[k] = self._model_test(model, cv_x, cv_y) * cv_x.shape[0]
 
-            std_err = (np.var(foldwise_err) **0.5) / (self.k_folds**0.5)
+            # std_err = (np.var(foldwise_err) **0.5) / (self.k_folds**0.5)
+            std_err = foldwise_err.std() / (self.k_folds**0.5)
             tot_err = sum(err) / (self.train_x.shape[0])
             alpha_std_errs[idx] = std_err
             alpha_errs[idx] = tot_err

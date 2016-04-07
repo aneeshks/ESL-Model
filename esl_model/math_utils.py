@@ -42,7 +42,7 @@ def solve_df_lambda(X: np.ndarray, dimension=None, epsilon=1e-3, do_standardizat
     for k in reversed(range(1, dimension)):
         last_lam = lambdas[k+1]
         while True:
-            new_lambda = last_lam - func_d(last_lam, k)/func_d_derivative(last_lam)
+            new_lambda = last_lam - func_d(last_lam, k) / func_d_derivative(last_lam)
             if abs((new_lambda - last_lam)/new_lambda) < epsilon:
                 lambdas[k] = new_lambda
                 break
