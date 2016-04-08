@@ -3,6 +3,7 @@
 
 import numpy as np
 from ..ch3.models import *
+from ..ch4.models import *
 
 
 DIRECTION_LEFT = 'left'
@@ -14,6 +15,7 @@ class BaseCV:
     # name that model use. ex, PCR use `m`, Ridge use `alpha`.
     _cv_field_name = 'alpha'
     _inc_regularization_direction = DIRECTION_LEFT
+    _one_standard_rule = True
 
     def __init__(self, train_x, train_y, features_name=None, do_standardization=True,
                  k_folds=10, alphas=None, random=False, **kwargs):
@@ -101,28 +103,33 @@ class BaseCV:
             alpha_std_errs[idx] = std_err
             alpha_errs[idx] = tot_err
 
-        # use one standard error rule to find best alpha
-        alpha_hat_idx =  alpha_errs.argmin()
-        # we move alpha for cease the (cv)_alpha <= (cv)_alpha_hat + (cv_std)_alpha_hat
-        cv_hat = alpha_errs[alpha_hat_idx] + alpha_std_errs[alpha_hat_idx]
+        if self._one_standard_rule:
+            # use one standard error rule to find best alpha
+            alpha_hat_idx =  alpha_errs.argmin()
+            # we move alpha for cease the (cv)_alpha <= (cv)_alpha_hat + (cv_std)_alpha_hat
+            cv_hat = alpha_errs[alpha_hat_idx] + alpha_std_errs[alpha_hat_idx]
 
-        if self._inc_regularization_direction is DIRECTION_LEFT:
-            move_direction = reversed(range(0, alpha_hat_idx+1))
+            if self._inc_regularization_direction is DIRECTION_LEFT:
+                move_direction = reversed(range(0, alpha_hat_idx+1))
+            else:
+                move_direction = range(alpha_hat_idx, len(alphas))
+
+            print('alphas len', len(alphas))
+            print('alpha_hat idx', alpha_hat_idx)
+            print('cv hat', cv_hat)
+
+
+            self.best_alpha = -1
+            # find the best_alpha
+            last_idx = None
+            for idx in move_direction:
+                if (alpha_errs[idx] > cv_hat) and (last_idx and alpha_errs[last_idx] <= cv_hat):
+                    self.best_alpha = alphas[last_idx]
+                    #break
+                last_idx = idx
         else:
-            move_direction = range(alpha_hat_idx, len(alphas))
+            self.best_alpha = alphas[alpha_errs.argmin()]
 
-        print('alphas len', len(alphas))
-        print('alpha_hat idx', alpha_hat_idx)
-        print('cv hat', cv_hat)
-
-        self.best_alpha = -1
-        # find the best_alpha
-        last_idx = None
-        for idx in move_direction:
-            if (alpha_errs[idx] > cv_hat) and (last_idx and alpha_errs[last_idx] <= cv_hat):
-                self.best_alpha = alphas[last_idx]
-                #break
-            last_idx = idx
 
 
         self.alpha_errs = alpha_errs
@@ -161,3 +168,9 @@ class BestSubsetSelectionCV(BaseCV):
     _bound_model = BestSubsetSelection
     _cv_field_name = 'k'
     _inc_regularization_direction = DIRECTION_LEFT
+
+
+class RDACV(BaseCV):
+    _bound_model = RDAModel
+    _cv_field_name = 'alpha'
+    _one_standard_rule = False

@@ -4,13 +4,15 @@ all CV get approximately result as book, but most CV use one standard rule can n
 
 import pytest
 import numpy as np
-
+from .test_ch4 import vowel_data
 
 @pytest.fixture
 def prostate_data():
     from esl_model.datasets import ProstateDataSet
     p = ProstateDataSet()
     return p.return_all()
+
+
 
 
 def test_ridge_cv(prostate_data):
@@ -137,3 +139,22 @@ def test_best_subset_selection_cv(prostate_data):
     print('alpha erros', cv.alpha_errs)
     print('alpha std erros', cv.alpha_std_errs)
     print('test error', cv.test(test_x, test_y).mse)
+
+
+def test_rda_cv(vowel_data):
+    from esl_model.ch7.models import RDACV
+    train_x, train_y, test_x, test_y, features = vowel_data
+
+    # range 0..1 is too slow
+    alphas = np.arange(0.96, 0.99, 0.01)
+    cv = RDACV(train_x, train_y, alphas=alphas, K=11)
+    cv.pre_processing()
+    cv.train()
+
+    print('best alpha', cv.best_alpha)
+    print('alpha erros', cv.alpha_errs)
+    print('alpha std erros', cv.alpha_std_errs)
+    print('test error', cv.test(test_x, test_y).error_rate)
+    assert cv.best_alpha == 0.97
+
+
