@@ -201,7 +201,7 @@ class PrincipalComponentsRegression(LinearModel):
 class PartialLeastSquare(LinearModel):
     def __init__(self, *args, M=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.M = M or self.p
+        self.M = M if M is not None else self.p
 
     def train(self):
         X = self.train_x

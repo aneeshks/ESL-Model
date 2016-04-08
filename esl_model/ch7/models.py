@@ -1,8 +1,8 @@
 """Apply K-folds CV for some model define in ch3 and ch4.
 """
 
-from ..ch3.models import LinearModel, RidgeModel, PrincipalComponentsRegression
 import numpy as np
+from ..ch3.models import *
 
 
 DIRECTION_LEFT = 'left'
@@ -16,11 +16,12 @@ class BaseCV:
     _inc_regularization_direction = DIRECTION_LEFT
 
     def __init__(self, train_x, train_y, features_name=None, do_standardization=True,
-                 k_folds=10, alphas=None, **kwargs):
+                 k_folds=10, alphas=None, random=False, **kwargs):
         self.train_x = train_x
         self.train_y = train_y
         self.k_folds = k_folds
         self.alphas = alphas
+        self.random = random
         self.kwargs = kwargs
 
         self.kwargs['features_name'] = features_name
@@ -29,9 +30,22 @@ class BaseCV:
     def pre_processing(self):
         """Provide same API as Model, we split data to K folds here.
         """
-        self.x_folds = [self.train_x[i::self.k_folds] for i in range(0, self.k_folds)]
-        self.y_folds = [self.train_y[i::self.k_folds] for i in range(0, self.k_folds)]
-        print('now', len(self.x_folds))
+        if self.random:
+            mask = np.random.permutation(self.train_x.shape[0])
+            train_x = self.train_x[mask]
+            train_y = self.train_y[mask]
+        else:
+            train_x = self.train_x[:]
+            train_y = self.train_y[:]
+
+        self.x_folds = [train_x[i::self.k_folds] for i in range(0, self.k_folds)]
+        self.y_folds = [train_y[i::self.k_folds] for i in range(0, self.k_folds)]
+
+
+        # for i in range(self.k_folds):
+        #     self.x_folds[i] = self.train_x[0] + self.x_folds[i] + self.train_x[-1]
+        #     self.y_folds[i] = self.train_y[0] + self.y_folds[i] + self.train_y[-1]
+
 
     @staticmethod
     def combine_train_folds(folds, exclude):
@@ -79,9 +93,11 @@ class BaseCV:
                 foldwise_err[k] = self._model_test(model, cv_x, cv_y)
                 err[k] = self._model_test(model, cv_x, cv_y) * cv_x.shape[0]
 
-            # std_err = (np.var(foldwise_err) **0.5) / (self.k_folds**0.5)
-            std_err = foldwise_err.std() / (self.k_folds**0.5)
-            tot_err = sum(err) / (self.train_x.shape[0])
+            std_err = (np.var(foldwise_err) **0.5) / (self.k_folds**0.5)
+            # print('foldwise err', foldwise_err)
+            # std_err = foldwise_err.std() / (self.k_folds**0.5)
+            # tot_err = sum(err) / (self.train_x.shape[0])
+            tot_err = sum(err) / sum(len(x) for x in self.x_folds)
             alpha_std_errs[idx] = std_err
             alpha_errs[idx] = tot_err
 
@@ -103,9 +119,9 @@ class BaseCV:
         # find the best_alpha
         last_idx = None
         for idx in move_direction:
-            if alpha_errs[idx] > cv_hat:
+            if (alpha_errs[idx] > cv_hat) and (last_idx and alpha_errs[last_idx] <= cv_hat):
                 self.best_alpha = alphas[last_idx]
-                break
+                #break
             last_idx = idx
 
 
@@ -132,4 +148,16 @@ class RidgeCV(BaseCV):
 class PCRCV(BaseCV):
     _bound_model = PrincipalComponentsRegression
     _cv_field_name = 'm'
+    _inc_regularization_direction = DIRECTION_LEFT
+
+
+class PartialLeastSquareCV(BaseCV):
+    _bound_model = PartialLeastSquare
+    _cv_field_name = 'M'
+    _inc_regularization_direction = DIRECTION_LEFT
+
+
+class BestSubsetSelectionCV(BaseCV):
+    _bound_model = BestSubsetSelection
+    _cv_field_name = 'k'
     _inc_regularization_direction = DIRECTION_LEFT
