@@ -1,4 +1,7 @@
 """Apply K-folds CV for some model define in ch3 and ch4.
+
+Note:All CV get approximately result as book, but most CV use one standard rule can not get same best alpha with book.
+     If I use CV with randomize train data, I can get the result as same as book most time.
 """
 
 import numpy as np
