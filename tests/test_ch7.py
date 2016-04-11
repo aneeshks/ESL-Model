@@ -159,19 +159,3 @@ def test_rda_cv(vowel_data):
     print('alpha std erros', cv.alpha_std_errs)
     print('test error', cv.test(test_x, test_y).error_rate)
     assert cv.best_alpha == 0.97
-
-
-def test_rrlda_cv(vowel_data):
-    from esl_model.ch7.models import ReducedRankLDACV
-    train_x, train_y, test_x, test_y, features = vowel_data
-
-    alphas = np.arange(0, vowel_data_y_dimension)
-    cv = ReducedRankLDACV(train_x, train_y, alphas=alphas, K=vowel_data_y_dimension, random=True)
-    cv.pre_processing()
-    cv.train()
-
-    print('best alpha', cv.best_alpha)
-    print('alpha erros', cv.alpha_errs)
-    print('alpha std erros', cv.alpha_std_errs)
-    print('test error', cv.test(test_x, test_y).error_rate)
-    assert 0

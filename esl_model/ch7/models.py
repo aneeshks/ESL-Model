@@ -18,12 +18,13 @@ class BaseCV:
     _one_standard_rule = True
 
     def __init__(self, train_x, train_y, features_name=None, do_standardization=True,
-                 k_folds=10, alphas=None, random=False, **kwargs):
+                 k_folds=10, alphas=None, random=False, select_train_method='step', **kwargs):
         self.train_x = train_x
         self.train_y = train_y
         self.k_folds = k_folds
         self.alphas = alphas
         self.random = random
+        self.select_train_method = select_train_method
         self.kwargs = kwargs
 
         self.kwargs['features_name'] = features_name
@@ -40,8 +41,12 @@ class BaseCV:
             train_x = self.train_x[:]
             train_y = self.train_y[:]
 
-        self.x_folds = [train_x[i::self.k_folds] for i in range(0, self.k_folds)]
-        self.y_folds = [train_y[i::self.k_folds] for i in range(0, self.k_folds)]
+        if self.select_train_method == 'step':
+            self.x_folds = [train_x[i::self.k_folds] for i in range(0, self.k_folds)]
+            self.y_folds = [train_y[i::self.k_folds] for i in range(0, self.k_folds)]
+        else:
+            self.x_folds = np.array_split(train_x, self.k_folds)
+            self.y_folds = np.array_split(train_y, self.k_folds)
 
 
         # for i in range(self.k_folds):
@@ -96,7 +101,7 @@ class BaseCV:
                 err[k] = self._model_test(model, cv_x, cv_y) * cv_x.shape[0]
 
             std_err = (np.var(foldwise_err) **0.5) / (self.k_folds**0.5)
-            # print('foldwise err', foldwise_err)
+            print('err', err)
             # std_err = foldwise_err.std() / (self.k_folds**0.5)
             # tot_err = sum(err) / (self.train_x.shape[0])
             tot_err = sum(err) / sum(len(x) for x in self.x_folds)
@@ -174,20 +179,20 @@ class BestSubsetSelectionCV(BaseCV):
     _inc_regularization_direction = DIRECTION_LEFT
 
 
-class RDACV(BaseCV):
+class RDACV(BaseLogisticCV):
     _bound_model = RDAModel
     _cv_field_name = 'alpha'
     _one_standard_rule = False
 
+    def _model_test(self, model, cv_x, cv_y):
+        X = model._pre_processing_x(cv_x)
+        N = X.shape[0]
 
-class ReducedRankLDACV(BaseLogisticCV):
-    _bound_model = ReducedRankLDAModel
-    _cv_field_name = 'L'
-    _inc_regularization_direction = DIRECTION_LEFT
+        err = 0
+        for k in range(model.K):
 
-    # def _model_test(self, model, cv_x, cv_y):
-    #     g_hat = model.predict(cv_x)
-    #     ans = 0
-    #     for i in range(1, 1 + model.K):
-    #         t = sum(cv_y==i)
-    #         ans +=
+            d = model.quadratic_discriminant_func(X, k)
+            t = d.diagonal()
+            err += sum(t[cv_y ==(k+1)])
+
+        return err*(-2) / N
