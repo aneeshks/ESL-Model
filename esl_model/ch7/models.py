@@ -146,6 +146,10 @@ class BaseCV:
         return getattr(self.model, name)
 
 
+class BaseLogisticCV(BaseCV):
+    def _model_test(self, model, cv_x, cv_y):
+        return model.test(cv_x, cv_y).error_rate
+
 
 class RidgeCV(BaseCV):
     _bound_model = RidgeModel
@@ -174,3 +178,16 @@ class RDACV(BaseCV):
     _bound_model = RDAModel
     _cv_field_name = 'alpha'
     _one_standard_rule = False
+
+
+class ReducedRankLDACV(BaseLogisticCV):
+    _bound_model = ReducedRankLDAModel
+    _cv_field_name = 'L'
+    _inc_regularization_direction = DIRECTION_LEFT
+
+    # def _model_test(self, model, cv_x, cv_y):
+    #     g_hat = model.predict(cv_x)
+    #     ans = 0
+    #     for i in range(1, 1 + model.K):
+    #         t = sum(cv_y==i)
+    #         ans +=

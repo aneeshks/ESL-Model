@@ -4,7 +4,7 @@ all CV get approximately result as book, but most CV use one standard rule can n
 
 import pytest
 import numpy as np
-from .test_ch4 import vowel_data
+from .test_ch4 import vowel_data, vowel_data_y_dimension
 
 @pytest.fixture
 def prostate_data():
@@ -141,13 +141,16 @@ def test_best_subset_selection_cv(prostate_data):
     print('test error', cv.test(test_x, test_y).mse)
 
 
+# ch4 model cv start
+
+
 def test_rda_cv(vowel_data):
     from esl_model.ch7.models import RDACV
     train_x, train_y, test_x, test_y, features = vowel_data
 
     # range 0..1 is too slow
     alphas = np.arange(0.96, 0.99, 0.01)
-    cv = RDACV(train_x, train_y, alphas=alphas, K=11)
+    cv = RDACV(train_x, train_y, alphas=alphas, K=vowel_data_y_dimension)
     cv.pre_processing()
     cv.train()
 
@@ -158,3 +161,17 @@ def test_rda_cv(vowel_data):
     assert cv.best_alpha == 0.97
 
 
+def test_rrlda_cv(vowel_data):
+    from esl_model.ch7.models import ReducedRankLDACV
+    train_x, train_y, test_x, test_y, features = vowel_data
+
+    alphas = np.arange(0, vowel_data_y_dimension)
+    cv = ReducedRankLDACV(train_x, train_y, alphas=alphas, K=vowel_data_y_dimension, random=True)
+    cv.pre_processing()
+    cv.train()
+
+    print('best alpha', cv.best_alpha)
+    print('alpha erros', cv.alpha_errs)
+    print('alpha std erros', cv.alpha_std_errs)
+    print('test error', cv.test(test_x, test_y).error_rate)
+    assert 0
