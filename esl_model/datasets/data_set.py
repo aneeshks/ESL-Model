@@ -125,7 +125,7 @@ class SAHeartDataSet(BaseDataSet):
 
 class ZipCodeDataSet(BaseDataSet):
     multi_data = True
-    data_path = ['data/zip.train', 'data/zip.test']
+    data_path = ['data/zip.train.gz', 'data/zip.test.gz']
 
     @staticmethod
     def read_data(path):
