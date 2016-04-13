@@ -3,7 +3,7 @@ from pandas import read_csv
 from os.path import join, dirname
 
 
-__all__ = ['ProstateDataSet', 'VowelDataSet', 'SAHeartDataSet']
+__all__ = ['ProstateDataSet', 'VowelDataSet', 'SAHeartDataSet', 'ZipCodeDataSet']
 
 
 class BaseDataSet:
@@ -121,3 +121,22 @@ class SAHeartDataSet(BaseDataSet):
 
         # empty test data set
         self._test_x = self._test_y = pd.DataFrame()
+
+
+class ZipCodeDataSet(BaseDataSet):
+    multi_data = True
+    data_path = ['data/zip.train', 'data/zip.test']
+
+    @staticmethod
+    def read_data(path):
+        filename = join(dirname(__file__), path)
+        return read_csv(filename, sep=' ', header=None)
+
+    def _process_data(self):
+        train, test = self.df
+
+        self._train_x = train.iloc[:, 1:257]
+        self._train_y = train.iloc[:, 0]
+        self._test_x = test.iloc[:, 1:257]
+        self._test_y = test.iloc[:, 0]
+
