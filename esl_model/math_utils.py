@@ -1,4 +1,8 @@
 import numpy as np
+from scipy.special import expit
+
+
+sigmoid = expit
 
 
 def generate_orthogonal_matrix(N):
