@@ -43,6 +43,10 @@ class BaseNeuralNetwork(BaseStatModel):
     def y_hat(self):
         return self._y_hat
 
+    @property
+    def rss(self):
+        return 1 - np.sum(self.y_hat == self._raw_train_y) / self.N
+
 
 class NeuralNetworkN1(BaseNeuralNetwork):
 
@@ -57,11 +61,6 @@ class NeuralNetworkN1(BaseNeuralNetwork):
         nw = np.zeros_like(weights)
         nw0 = np.zeros_like(weights0)
 
-        # # forward propagation
-        # T = sigmoid(X@weights + weights0)
-        print('simoid', sigmoid(100))
-        # back propagation
-        print(N)
         for i in range(N):
             x = X[i]
             t = sigmoid(x @ weights + weights0)
@@ -76,12 +75,16 @@ class NeuralNetworkN1(BaseNeuralNetwork):
         nw = self.alpha*weights + nw/N
         nw0 = nw0/N
         NT = sigmoid(X@(nw) + nw0)
+        self.nw = nw
+        self.nw0 = nw0
 
         self._y_hat = NT.argmax(axis=1).reshape((-1,1))
 
-    @property
-    def rss(self):
-        return 1 - np.sum(self.y_hat == self._raw_train_y)/self.N
+    def predict(self, X: np.ndarray):
+        X = self._pre_processing_x(X)
+        y = sigmoid(X@self.nw + self.nw0)
+        return y.argmax(axis=1).reshape((-1,1))
+
 
 
 
