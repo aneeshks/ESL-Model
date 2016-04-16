@@ -20,9 +20,13 @@ def test_nn1(zipcode_data):
     from esl_model.ch11.models import NeuralNetworkN1
     train_x, train_y, test_x, test_y, features = zipcode_data
 
-    model = NeuralNetworkN1(train_x, train_y, K=10)
+    model = NeuralNetworkN1(train_x, train_y, K=10, alpha=1.1)
     model.pre_processing()
     model.train()
 
-    print(model.y_hat[:1])
+    print(model.y_hat[:10])
+    print(train_y[:10])
+    print(model._raw_train_y[:10])
+    print(model.rss())
+
     assert 0
