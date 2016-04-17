@@ -38,7 +38,7 @@ def test_indicator_matrix(vowel_data):
 
     train_x, train_y, test_x, test_y, features = vowel_data
 
-    lrm = LinearRegressionIndicatorMatrix(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    lrm = LinearRegressionIndicatorMatrix(train_x=train_x, train_y=train_y, n_class=vowel_data_y_dimension)
     lrm.pre_processing()
     lrm.train()
     print(lrm.error_rate)
@@ -53,7 +53,7 @@ def test_LDA(vowel_data):
     from esl_model.ch4.models import LDAModel
     train_x, train_y, test_x, test_y, features = vowel_data
 
-    lda = LDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    lda = LDAModel(train_x=train_x, train_y=train_y, n_class=vowel_data_y_dimension)
     lda.pre_processing()
     lda.train()
 
@@ -71,7 +71,7 @@ def test_QDA(vowel_data):
     from esl_model.ch4.models import QDAModel
     train_x, train_y, test_x, test_y, features = vowel_data
 
-    qda = QDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    qda = QDAModel(train_x=train_x, train_y=train_y, n_class=vowel_data_y_dimension)
     qda.pre_processing()
     qda.train()
 
@@ -89,7 +89,7 @@ def test_RDA(vowel_data):
 
     # http://waxworksmath.com/Authors/G_M/Hastie/WriteUp/weatherwax_epstein_hastie_solutions_manual.pdf
     # pp 60
-    model = RDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension, alpha=0.969697)
+    model = RDAModel(train_x=train_x, train_y=train_y, n_class=vowel_data_y_dimension, alpha=0.969697)
     model.pre_processing()
     model.train()
 
@@ -103,12 +103,12 @@ def test_LDA_computation(vowel_data):
     from esl_model.ch4.models import LDAForComputation
     train_x, train_y, test_x, test_y, features = vowel_data
 
-    model = LDAForComputation(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    model = LDAForComputation(train_x=train_x, train_y=train_y, n_class=vowel_data_y_dimension)
     model.pre_processing()
     model.train()
 
     from esl_model.ch4.models import LDAModel
-    lda = LDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension)
+    lda = LDAModel(train_x=train_x, train_y=train_y, n_class=vowel_data_y_dimension)
     lda.pre_processing()
     lda.train()
     print(model.error_rate)
@@ -121,7 +121,7 @@ def test_RRLDA(vowel_data):
     from esl_model.ch4.models import ReducedRankLDAModel
     train_x, train_y, test_x, test_y, features = vowel_data
 
-    model = ReducedRankLDAModel(train_x=train_x, train_y=train_y, K=vowel_data_y_dimension, L=2)
+    model = ReducedRankLDAModel(train_x=train_x, train_y=train_y, n_class=vowel_data_y_dimension, L=2)
     model.pre_processing()
     model.train()
 
@@ -148,7 +148,7 @@ def test_binary_logistic_regression(SAHeart_data):
     train_x = data.train_x
     train_y = data.train_y
 
-    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2, do_standardization=False)
+    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, n_class=2, do_standardization=False)
     model.pre_processing()
     model.train()
     print(model.beta_hat)
@@ -173,7 +173,7 @@ def test_binary_logistic_regression(SAHeart_data):
     data = SAHeartDataSet(select_features=[0, 1, 2, 4, 6, 7, 8])
     train_x = data.train_x
     train_y = data.train_y
-    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, K=2, do_standardization=False)
+    model = BinaryLogisticRegression(train_x=train_x, train_y=train_y, n_class=2, do_standardization=False)
     model.pre_processing()
     model.train()
 

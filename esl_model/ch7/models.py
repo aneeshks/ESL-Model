@@ -192,7 +192,7 @@ class RDACV(BaseLogisticCV):
         N = X.shape[0]
 
         err = 0
-        for k in range(model.K):
+        for k in range(model.n_class):
 
             d = model.quadratic_discriminant_func(X, k)
             t = d.diagonal()

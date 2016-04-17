@@ -150,7 +150,7 @@ def test_rda_cv(vowel_data):
 
     # range 0..1 is too slow
     alphas = np.arange(0.96, 0.99, 0.01)
-    cv = RDACV(train_x, train_y, alphas=alphas, K=vowel_data_y_dimension)
+    cv = RDACV(train_x, train_y, alphas=alphas, n_class=vowel_data_y_dimension)
     cv.pre_processing()
     cv.train()
 

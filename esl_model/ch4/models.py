@@ -10,8 +10,8 @@ __all__ = ['LinearRegressionIndicatorMatrix', 'LDAModel', 'QDAModel', 'RDAModel'
 
 
 class LinearRegression(LinearModel):
-    def __init__(self, *args, **kwargs):
-        self.K = kwargs.pop('K', 1)
+    def __init__(self, *args, n_class, **kwargs):
+        self.n_class = n_class
         super().__init__(*args, **kwargs)
 
     @property
@@ -22,14 +22,14 @@ class LinearRegression(LinearModel):
 
 class LinearRegressionIndicatorMatrix(LeastSquareModel):
     def __init__(self, *args, **kwargs):
-        self.K = kwargs.pop('K', 1)
+        self.n_class = kwargs.pop('n_class', 1)
         super().__init__(*args, **kwargs)
 
     def _pre_processing_y(self, y):
         iy = y.flatten()
         N = y.shape[0]
-        if self.K > 1:
-            Y = np.zeros((N, self.K))
+        if self.n_class > 1:
+            Y = np.zeros((N, self.n_class))
             for i in range(N):
                 k = iy[i]
                 # k starts from 1
@@ -62,7 +62,7 @@ class LDAModel(LinearRegression):
     def train(self):
         X = self.train_x
         y = self.train_y
-        K = self.K
+        K = self.n_class
         p = self.p
 
         self.Mu = np.zeros((K, p))
@@ -94,9 +94,9 @@ class LDAModel(LinearRegression):
     def predict(self, X):
         X = self._pre_processing_x(X)
         N = X.shape[0]
-        Y = np.zeros((N, self.K))
+        Y = np.zeros((N, self.n_class))
 
-        for k in range(self.K):
+        for k in range(self.n_class):
             # delta_k is (N x 1)
             delta_k = self.linear_discriminant_func(X, k)
             Y[:, k] = delta_k
@@ -119,7 +119,7 @@ class QDAModel(LinearRegression):
     def train(self):
         X = self.train_x
         y = self.train_y
-        K = self.K
+        K = self.n_class
         p = self.p
 
         self.Mu = np.zeros((K, p))
@@ -150,9 +150,9 @@ class QDAModel(LinearRegression):
     def predict(self, X):
         X = self._pre_processing_x(X)
         N = X.shape[0]
-        Y = np.zeros((N, self.K))
+        Y = np.zeros((N, self.n_class))
 
-        for k in range(self.K):
+        for k in range(self.n_class):
             # the intuitive solution is use np.apply_along_axis, but is too slow
             # delta_k is (N x 1)
             # delta_k_func = partial(self.linear_discriminant_func, k=k)
@@ -177,7 +177,7 @@ class RDAModel(QDAModel):
     def train(self):
         X = self.train_x
         y = self.train_y
-        K = self.K
+        K = self.n_class
         p = self.p
 
         self.Mu = np.zeros((K, p))
@@ -215,13 +215,13 @@ class LDAForComputation(LDAModel):
 
     def predict(self, X):
         X = self._pre_processing_x(X)
-        Y = np.zeros((X.shape[0], self.K))
+        Y = np.zeros((X.shape[0], self.n_class))
         A = self.A
 
         # because X is (N x p), A is (K x p), we can to get the X_star (NxK)
         X_star = X @ A.T
 
-        for k in range(self.K):
+        for k in range(self.n_class):
             # mu_s_star shape is (p,)
             mu_k_star = A @ self.Mu[k]
 
@@ -257,7 +257,7 @@ class ReducedRankLDAModel(LDAForComputation):
         Mu = self.Mu
         p = self.p
         # the number of class
-        K = self.K
+        K = self.n_class
         # the dimension you want
         L = self.L
 

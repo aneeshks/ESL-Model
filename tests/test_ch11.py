@@ -29,4 +29,4 @@ def test_nn1(zipcode_data):
     print(model.rss)
     print(model.test(test_x, test_y).error_rate)
 
-    assert 0
+    # assert 0

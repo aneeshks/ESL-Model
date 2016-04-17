@@ -116,8 +116,8 @@ class BaseStatModel:
 
 
 class ClassificationMixin(BaseStatModel):
-    def __init__(self, *args, K, **kwargs):
-        self.K = K
+    def __init__(self, *args, n_class, **kwargs):
+        self.n_class = n_class
         self._label_map = dict()
         super().__init__(*args, **kwargs)
 
