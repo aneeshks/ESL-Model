@@ -2,6 +2,7 @@ import numpy as np
 from .utils import lazy_method
 from numpy import linalg
 from scipy.linalg import svd
+from scipy.sparse import csr_matrix
 
 
 class MathCollection:
@@ -112,3 +113,27 @@ class BaseStatModel:
     @property
     def math(self):
         return mathcollection
+
+
+class ClassificationMixin(BaseStatModel):
+    def __init__(self, *args, K, **kwargs):
+        self.K = K
+        self._label_map = dict()
+        super().__init__(*args, **kwargs)
+
+    @lazy_method
+    def _get_unique_sorted_label(self):
+        y = self._raw_train_y
+        unique_label = np.unique(y)
+        sorted_label = np.sort(unique_label)
+        return sorted_label
+
+    def _pre_processing_y(self, y):
+        y = super()._pre_processing_y(y)
+        sorted_label = self._get_unique_sorted_label()
+        cols = np.searchsorted(sorted_label, y)
+        rows = np.arange(0, y.shape[0])
+        data = np.ones_like(rows)
+        matrix = csr_matrix(data, (rows, cols)).toarray()
+        return matrix
+
