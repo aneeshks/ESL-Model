@@ -3,6 +3,7 @@ from ..ch3.models import LeastSquareModel, LinearModel
 import numpy as np
 from numpy import linalg as LA
 from ..utils import lazy_method
+from ..base import ClassificationMixin
 
 
 __all__ = ['LinearRegressionIndicatorMatrix', 'LDAModel', 'QDAModel', 'RDAModel', 'LDAForComputation',
@@ -20,23 +21,23 @@ class LinearRegression(LinearModel):
         return 1 - np.sum((self._raw_train_y == self.y_hat)) / self.N
 
 
-class LinearRegressionIndicatorMatrix(LeastSquareModel):
-    def __init__(self, *args, **kwargs):
-        self.n_class = kwargs.pop('n_class', 1)
-        super().__init__(*args, **kwargs)
-
-    def _pre_processing_y(self, y):
-        iy = y.flatten()
-        N = y.shape[0]
-        if self.n_class > 1:
-            Y = np.zeros((N, self.n_class))
-            for i in range(N):
-                k = iy[i]
-                # k starts from 1
-                Y[i, k-1] = 1
-        else:
-            return super()._pre_processing_y(y)
-        return Y
+class LinearRegressionIndicatorMatrix(ClassificationMixin, LeastSquareModel):
+    # def __init__(self, *args, **kwargs):
+    #     self.n_class = kwargs.pop('n_class', 1)
+    #     super().__init__(*args, **kwargs)
+    #
+    # def _pre_processing_y(self, y):
+    #     iy = y.flatten()
+    #     N = y.shape[0]
+    #     if self.n_class > 1:
+    #         Y = np.zeros((N, self.n_class))
+    #         for i in range(N):
+    #             k = iy[i]
+    #             # k starts from 1
+    #             Y[i, k-1] = 1
+    #     else:
+    #         return super()._pre_processing_y(y)
+    #     return Y
 
     def predict(self, X):
         Y_hat = super().predict(X)

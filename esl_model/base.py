@@ -115,7 +115,7 @@ class BaseStatModel:
         return mathcollection
 
 
-class ClassificationMixin(BaseStatModel):
+class ClassificationMixin:
     def __init__(self, *args, n_class, **kwargs):
         self.n_class = n_class
         self._label_map = dict()
@@ -134,9 +134,9 @@ class ClassificationMixin(BaseStatModel):
 
         # reference sklearn.preprocessing.label.py
         sorted_label = self._get_unique_sorted_label()
-        cols = np.searchsorted(sorted_label, y)
+        cols = np.searchsorted(sorted_label, y.flatten())
         rows = np.arange(0, y.shape[0])
         data = np.ones_like(rows)
-        matrix = csr_matrix(data, (rows, cols)).toarray()
+        matrix = csr_matrix((data, (rows, cols)), shape=(y.shape[0], self.n_class)).toarray()
         return matrix
 
