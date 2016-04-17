@@ -115,8 +115,8 @@ class BaseStatModel:
         return mathcollection
 
 
-class ClassificationMixin:
-    def __init__(self, *args, n_class, **kwargs):
+class ClassificationMixin(BaseStatModel):
+    def __init__(self, *args, n_class=None, **kwargs):
         self.n_class = n_class
         self._label_map = dict()
         super().__init__(*args, **kwargs)
@@ -129,11 +129,13 @@ class ClassificationMixin:
         return sorted_label
 
     def _pre_processing_y(self, y):
-
         y = super()._pre_processing_y(y)
 
         # reference sklearn.preprocessing.label.py
         sorted_label = self._get_unique_sorted_label()
+        if self.n_class is None:
+            self.n_class = len(sorted_label)
+
         cols = np.searchsorted(sorted_label, y.flatten())
         rows = np.arange(0, y.shape[0])
         data = np.ones_like(rows)
