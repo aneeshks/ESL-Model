@@ -129,7 +129,10 @@ class ClassificationMixin(BaseStatModel):
         return sorted_label
 
     def _pre_processing_y(self, y):
+
         y = super()._pre_processing_y(y)
+
+        # reference sklearn.preprocessing.label.py
         sorted_label = self._get_unique_sorted_label()
         cols = np.searchsorted(sorted_label, y)
         rows = np.arange(0, y.shape[0])
