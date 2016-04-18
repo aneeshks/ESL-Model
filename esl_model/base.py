@@ -142,3 +142,12 @@ class ClassificationMixin(BaseStatModel):
         matrix = csr_matrix((data, (rows, cols)), shape=(y.shape[0], self.n_class)).toarray()
         return matrix
 
+    def _inverse_matrix_to_class(self, matrix):
+        """
+        inverse indicator matrix to multi class
+        :param matrix:
+        :return:
+        """
+        index = matrix.argmax(axis=1)
+        sorted_label = self._get_unique_sorted_label()
+        return sorted_label[index].reshape((-1, 1))
