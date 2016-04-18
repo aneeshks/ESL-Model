@@ -30,9 +30,9 @@ def test_nn1(zipcode_data):
     print(model.test(test_x, test_y).error_rate)
 
 
-    # from esl_model.ch4.models import LDAModel as g
+    # from esl_model.ch4.models import LinearRegressionIndicatorMatrix as g
     # m = g(train_x, train_y, n_class=10)
     # m.pre_processing()
     # m.train()
-    # print('lda', m.error_rate)
+    # print('lda', m.beta_hat)
     assert 0

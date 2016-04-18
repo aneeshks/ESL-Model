@@ -47,25 +47,28 @@ class NeuralNetworkN1(BaseNeuralNetwork):
         print('y', y.shape)
         for i in range(N):
             x = X[i]
-            t = sigmoid(x @ weights + weights0)
-            print(t)
+            z = x @ weights + weights0
+            t = sigmoid(z)
+            # print(t)
             # break
             # print(t)
-            delta = (t- y[i])#*(1-x @ weights)*(x @ weights)
+            delta = -(y[i]-t)#*(1-t)*(t)
             # print(delta)
             # uw = np.repeat(x.reshape((-1,1)), 10, axis=1) * delta
             nw = nw + (x[:,None]@delta[None,:])
 
             nw0 += delta
 
-        nw = (self.alpha*weights + nw)/N
-        nw0 = nw0/N
+        nw = weights - self.alpha*nw/N
+        nw0 = weights0 - self.alpha*nw0/N
         NT = sigmoid(X@(nw) + nw0)
         self.nw = nw
         self.nw0 = nw0
+        print(self.nw)
+        print(self.nw0)
 
-        # self._y_hat = NT.argmax(axis=1).reshape((-1,1))
-        self._y_hat = self._inverse_matrix_to_class(NT)
+        self._y_hat = NT.argmax(axis=1).reshape((-1,1))
+        # self._y_hat = self._inverse_matrix_to_class(NT)
 
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
@@ -74,6 +77,18 @@ class NeuralNetworkN1(BaseNeuralNetwork):
         return self._inverse_matrix_to_class(y)
 
 
+
+class NN1(BaseNeuralNetwork):
+    def train(self):
+        X = self.train_x
+        y = self.train_y
+        N = self.N
+
+        _weights = np.random.uniform(-0.7, 0.7, (self.p + 1, self.n_class))
+        weights = _weights[1:]
+        weights0 = _weights[0]
+        nw = np.zeros_like(weights)
+        nw0 = np.zeros_like(weights0)
 
 
 
