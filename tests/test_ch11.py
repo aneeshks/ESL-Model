@@ -36,3 +36,31 @@ def test_nn1(zipcode_data):
     # m.train()
     # print('lda', m.beta_hat)
     assert 0
+
+def test_n1(zipcode_data):
+    from esl_model.ch11.models import NN1
+    train_x, train_y, test_x, test_y, features = zipcode_data
+
+    model = NN1(train_x, train_y, n_class=10, alpha=0.1)
+    model.pre_processing()
+    model.train()
+
+    print(model.y_hat[:10].flatten())
+    print(train_y[:10])
+    print(model.rss)
+    print(model.test(test_x, test_y).error_rate)
+    assert 0
+
+def test_nn2(zipcode_data):
+    from esl_model.ch11.models import NN2
+    train_x, train_y, test_x, test_y, features = zipcode_data
+
+    model = NN2(train_x[:], train_y[:], n_class=10, alpha=0.1)
+    model.pre_processing()
+    model.train()
+
+    print(model.y_hat[:10].flatten())
+    print(train_y[:10])
+    print(model.rss)
+    print(model.test(test_x, test_y).error_rate)
+    assert 0
