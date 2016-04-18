@@ -114,8 +114,9 @@ class NN1(BaseNeuralNetwork):
 
 
 class NN2(BaseNeuralNetwork):
-    def __init__(self, *args, hidden=12, **kwargs):
+    def __init__(self, *args, hidden=12, iter_time=3,**kwargs):
         self.hidden = hidden
+        self.iter_time = iter_time
         super().__init__(*args, **kwargs)
 
     def train(self):
@@ -130,24 +131,31 @@ class NN2(BaseNeuralNetwork):
         weights1 = _weights[1:]
         weights10 = _weights[0]
 
+        for r in range(self.iter_time):
+            w1 = np.zeros_like(weights1)
+            w10 = np.zeros_like(weights10)
+            w = np.zeros_like(weights)
+            w0 = np.zeros_like(weights0)
+            for i in range(N):
+                x = X[i]
+                a1 = x
+                z2 = x @ weights + weights0
+                a2 = sigmoid(z2)
+                z3 = a2 @ weights1 + weights10
+                a3 = sigmoid(z3)
 
-        for i in range(N):
-            x = X[i]
-            a1 = x
-            z2 = x @ weights + weights0
-            a2 = sigmoid(z2)
-            z3 = a2 @ weights1 + weights10
-            a3 = sigmoid(z3)
+                delta3 = -2 * (y[i] - a3) * (1-a3)*a3
+                delta2 = weights1@delta3*a2*(1-a2)
 
-            delta3 = -2 * (y[i] - a3) * (1-a3)*a3
-            delta2 = weights1@delta3*a2*(1-a2)
+                w1 += self.alpha * (a2[:, None] @ delta3[None, :])
+                w10 += self.alpha * delta3
 
-            weights1 = weights1 - self.alpha * (a2[:, None] @ delta3[None, :])
-            weights10 = weights10 - self.alpha * delta3
-
-            weights = weights - self.alpha * (a1[:, None] @ delta2[None, :])
-            weights0 = weights0 - self.alpha * delta2
-
+                w +=self.alpha * (a1[:, None] @ delta2[None, :])
+                w0 += self.alpha * delta2
+            weights0 -= w0
+            weights -= w
+            weights10 -= w10
+            weights1 -= w1
         # nw = weights
         # nw0 = weights0
         # NT = sigmoid(X @ (nw) + nw0)

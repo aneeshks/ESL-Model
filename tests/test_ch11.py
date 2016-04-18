@@ -55,7 +55,7 @@ def test_nn2(zipcode_data):
     from esl_model.ch11.models import NN2
     train_x, train_y, test_x, test_y, features = zipcode_data
 
-    model = NN2(train_x[:], train_y[:], n_class=10, alpha=0.1)
+    model = NN2(train_x[:1000], train_y[:1000], n_class=10, alpha=0.1, iter_time=1)
     model.pre_processing()
     model.train()
 
