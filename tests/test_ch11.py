@@ -20,13 +20,19 @@ def test_nn1(zipcode_data):
     from esl_model.ch11.models import NeuralNetworkN1
     train_x, train_y, test_x, test_y, features = zipcode_data
 
-    model = NeuralNetworkN1(train_x, train_y, K=10, alpha=1)
+    model = NeuralNetworkN1(train_x[:500], train_y[:500], n_class=10, alpha=1)
     model.pre_processing()
     model.train()
 
-    print(model.y_hat[:10])
+    print(model.y_hat[:10].flatten())
     print(train_y[:10])
     print(model.rss)
     print(model.test(test_x, test_y).error_rate)
 
-    # assert 0
+
+    # from esl_model.ch4.models import LDAModel as g
+    # m = g(train_x, train_y, n_class=10)
+    # m.pre_processing()
+    # m.train()
+    # print('lda', m.error_rate)
+    assert 0
