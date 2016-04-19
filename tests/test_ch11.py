@@ -20,7 +20,7 @@ def test_nn1(zipcode_data):
     from esl_model.ch11.models import NeuralNetworkN1
     train_x, train_y, test_x, test_y, features = zipcode_data
 
-    model = NeuralNetworkN1(train_x[:500], train_y[:500], n_class=10, alpha=1)
+    model = NeuralNetworkN1(train_x[:320], train_y[:320], n_class=10, alpha=0.01)
     model.pre_processing()
     model.train()
 
@@ -55,7 +55,7 @@ def test_nn2(zipcode_data):
     from esl_model.ch11.models import NN2
     train_x, train_y, test_x, test_y, features = zipcode_data
 
-    model = NN2(train_x[:1000], train_y[:1000], n_class=10, alpha=0.1, iter_time=1)
+    model = NN2(train_x[:520], train_y[:520], n_class=10, alpha=1, iter_time=150)
     model.pre_processing()
     model.train()
 
@@ -64,3 +64,4 @@ def test_nn2(zipcode_data):
     print(model.rss)
     print(model.test(test_x, test_y).error_rate)
     assert 0
+    from sklearn.neural_network import BernoulliRBM

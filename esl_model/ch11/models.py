@@ -42,30 +42,33 @@ class NeuralNetworkN1(BaseNeuralNetwork):
         _weights = np.random.uniform(-0.7, 0.7, (self.p + 1, self.n_class))
         weights = _weights[1:]
         weights0 = _weights[0]
-        nw = np.zeros_like(weights)
-        nw0 = np.zeros_like(weights0)
-        print('y', y.shape)
-        for i in range(N):
-            x = X[i]
-            z = x @ weights + weights0
-            t = sigmoid(z)
-            # print(t)
-            # break
-            # print(t)
-            delta = -(y[i]-t)*(1-t)*t
-            # print(delta)
-            # uw = np.repeat(x.reshape((-1,1)), 10, axis=1) * delta
-            nw = nw + (x[:,None]@delta[None,:])
+        for r in range(300):
+            nw = np.zeros_like(weights)
+            nw0 = np.zeros_like(weights0)
+            for i in range(N):
+                x = X[i]
+                z = x @ weights + weights0
+                t = sigmoid(z)
+                # print(t)
+                # break
+                # print(t)
+                delta = -(y[i]-t)#*((1-t)*t)*2
+                # print('delta',delta)
+                # break
+                # print(delta)
+                # uw = np.repeat(x.reshape((-1,1)), 10, axis=1) * delta
+                nw = nw + (x[:,None]@delta[None,:])
 
-            nw0 += delta
+                nw0 = nw0 + delta
 
-        nw = weights - self.alpha*nw/N
-        nw0 = weights0 - self.alpha*nw0/N
-        NT = sigmoid(X@(nw) + nw0)
-        self.nw = nw
-        self.nw0 = nw0
-        print(self.nw)
-        print(self.nw0)
+            weights = weights  - self.alpha*nw
+            # weights0 = self.alpha*nw0
+
+        print(weights)
+        NT = sigmoid(X@(weights) + weights0)
+        self.nw = weights
+        self.nw0 = weights0
+
 
         self._y_hat = NT.argmax(axis=1).reshape((-1,1))
         # self._y_hat = self._inverse_matrix_to_class(NT)
@@ -131,6 +134,10 @@ class NN2(BaseNeuralNetwork):
         weights1 = _weights[1:]
         weights10 = _weights[0]
 
+        # w1 = np.zeros_like(weights1)
+        # w10 = np.zeros_like(weights10)
+        # w = np.zeros_like(weights)
+        # w0 = np.zeros_like(weights0)
         for r in range(self.iter_time):
             w1 = np.zeros_like(weights1)
             w10 = np.zeros_like(weights10)
@@ -144,7 +151,7 @@ class NN2(BaseNeuralNetwork):
                 z3 = a2 @ weights1 + weights10
                 a3 = sigmoid(z3)
 
-                delta3 = -2 * (y[i] - a3) * (1-a3)*a3
+                delta3 = -2*(y[i] - a3) #* (1-a3)*a3
                 delta2 = weights1@delta3*a2*(1-a2)
 
                 w1 += self.alpha * (a2[:, None] @ delta3[None, :])
@@ -152,10 +159,10 @@ class NN2(BaseNeuralNetwork):
 
                 w +=self.alpha * (a1[:, None] @ delta2[None, :])
                 w0 += self.alpha * delta2
-            weights0 -= w0
-            weights -= w
-            weights10 -= w10
-            weights1 -= w1
+            weights0 -= w0/N
+            weights -= w/N
+            weights10 -= w10/N
+            weights1 -= w1/N
         # nw = weights
         # nw0 = weights0
         # NT = sigmoid(X @ (nw) + nw0)
