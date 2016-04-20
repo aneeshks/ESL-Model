@@ -64,6 +64,10 @@ class MiniBatchNN1(BaseNeuralNetwork):
     """
     use mini batch
     """
+    def __init__(self, *args, mini_batch=10, **kwargs):
+        self.mini_batch=mini_batch
+        super().__init__(*args, **kwargs)
+
     def train(self):
         X = self.train_x
         y = self.train_y
@@ -72,29 +76,32 @@ class MiniBatchNN1(BaseNeuralNetwork):
         _weights = np.random.uniform(-0.7, 0.7, (self.p + 1, self.n_class))
         weights = _weights[1:]
         weights0 = _weights[0]
-        nw = np.zeros_like(weights)
-        nw0 = np.zeros_like(weights0)
 
-        for i in range(N):
-            x = X[i]
-            z = x@weights + weights0
-            t = sigmoid(z)
-            delta = -2*(y[i]-t)*sigmoid(1-z)*sigmoid(z)
-            weights = weights - self.alpha*(x[:,None]@delta[None,:])
-            weights0 = weights0 - self.alpha*delta
+        for r in range(self.n_iter):
+            for j in range(0, N, self.mini_batch):
+                nw = np.zeros_like(weights)
+                nw0 = np.zeros_like(weights0)
+                for i in range(j, j+self.mini_batch):
+                    if (j+self.mini_batch) >= N:
+                        break
 
-        nw = weights
-        nw0=weights0
-        NT = sigmoid(X @ (nw) + nw0)
-        self._y_hat = NT.argmax(axis=1).reshape((-1, 1))
-        self.nw = nw
-        self.nw0 = nw0
+                    x = X[i]
+                    z = x@weights + weights0
+                    t = sigmoid(z)
+                    delta = -(y[i]-t)
+                    nw += (x[:,None]@delta[None,:])
+                    nw0 += delta
+
+                weights -= self.alpha*nw
+                weights0 -= self.alpha*nw0
+
+        self.weights = weights
+        self.weights0 = weights0
 
 
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
-        y = sigmoid(X @ self.nw + self.nw0)
-        # return y.argmax(axis=1).reshape((-1,1))
+        y = sigmoid(X @ self.weights + self.weights0)
         return self._inverse_matrix_to_class(y)
 
 

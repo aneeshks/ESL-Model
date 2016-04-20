@@ -38,10 +38,10 @@ def test_nn1(zipcode_data):
     assert 0
 
 def test_n1(zipcode_data):
-    from esl_model.ch11.models import NN1
+    from esl_model.ch11.models import MiniBatchNN1
     train_x, train_y, test_x, test_y, features = zipcode_data
 
-    model = NN1(train_x, train_y, n_class=10, alpha=0.1)
+    model = MiniBatchNN1(train_x[:320], train_y[:320], n_class=10, alpha=0.01, n_iter=5, mini_batch=10)
     model.pre_processing()
     model.train()
 
