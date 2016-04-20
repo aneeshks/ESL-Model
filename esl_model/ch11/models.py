@@ -4,9 +4,9 @@ import numpy as np
 
 
 class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, n_iter=10, **kwargs):
         self.alpha = kwargs.pop('alpha')
-        # self.K = kwargs.pop('K')
+        self.n_iter = n_iter
         super().__init__(*args, **kwargs)
 
     def _pre_processing_x(self, X: np.ndarray):
@@ -14,18 +14,9 @@ class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
         X = self.standardize(X)
         return X
 
-    # def _pre_processing_y(self, y: np.ndarray):
-    #     N = y.shape[0]
-    #     iy = y.flatten()
-    #     mask = iy.copy()
-    #     classification = np.zeros((N, self.K))
-    #     for i in range(self.K):
-    #         classification[mask == i, i] = 1
-    #     return classification
-
     @property
     def y_hat(self):
-        return self._y_hat
+        return self.predict(self._raw_train_x)
 
     @property
     def rss(self):
@@ -33,55 +24,46 @@ class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
 
 
 class NeuralNetworkN1(BaseNeuralNetwork):
+    """
+    depend on book, use batch update.
+    """
 
     def train(self):
         X = self.train_x
         y = self.train_y
         N = self.N
-
         _weights = np.random.uniform(-0.7, 0.7, (self.p + 1, self.n_class))
         weights = _weights[1:]
         weights0 = _weights[0]
-        for r in range(300):
+        for r in range(self.n_iter):
             nw = np.zeros_like(weights)
             nw0 = np.zeros_like(weights0)
             for i in range(N):
                 x = X[i]
                 z = x @ weights + weights0
                 t = sigmoid(z)
-                # print(t)
-                # break
-                # print(t)
-                delta = -(y[i]-t)#*((1-t)*t)*2
-                # print('delta',delta)
-                # break
-                # print(delta)
-                # uw = np.repeat(x.reshape((-1,1)), 10, axis=1) * delta
+                # reference ng cousera course.
+                delta = -(y[i]-t)
                 nw = nw + (x[:,None]@delta[None,:])
-
                 nw0 = nw0 + delta
 
             weights = weights  - self.alpha*nw
-            # weights0 = self.alpha*nw0
+            weights0 = weights0 - self.alpha*nw0
 
-        print(weights)
-        NT = sigmoid(X@(weights) + weights0)
         self.nw = weights
         self.nw0 = weights0
-
-
-        self._y_hat = NT.argmax(axis=1).reshape((-1,1))
-        # self._y_hat = self._inverse_matrix_to_class(NT)
 
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
         y = sigmoid(X@self.nw + self.nw0)
-        # return y.argmax(axis=1).reshape((-1,1))
         return self._inverse_matrix_to_class(y)
 
 
 
-class NN1(BaseNeuralNetwork):
+class MiniBatchNN1(BaseNeuralNetwork):
+    """
+    use mini batch
+    """
     def train(self):
         X = self.train_x
         y = self.train_y
