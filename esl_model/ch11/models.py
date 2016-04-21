@@ -42,7 +42,6 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
         a = x.copy()
         layer_output = []
         layer_output.append(a)
-
         for theta, intercept in self.thetas:
             a = sigmoid(a@theta + intercept)
             layer_output.append(a)
@@ -56,9 +55,9 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
             grad = a.T @ delta
             intercept_grad = np.sum(delta, axis=0)
             # TODO: verify this right
-            delta =  ((1-a)*a).T * (theta @ delta.T)
-            theta -= grad * self.alpha
-            intercept -= intercept_grad * self.alpha
+            delta =  ((1-a)*a) * (delta @ theta.T)
+            theta -= grad * self.alpha / self.mini_batch
+            intercept -= intercept_grad * self.alpha / self.mini_batch
 
 
         return theta_grad[::-1]
@@ -86,6 +85,7 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
             theta = _theta[1:]
             intercept = _theta[0]
             thetas.append((theta, intercept))
+            input_dimension = target_dimension
         self.thetas = thetas
 
     def train(self):

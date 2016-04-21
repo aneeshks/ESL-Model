@@ -64,18 +64,18 @@ def test_nn2(zipcode_data):
     print(model.rss)
     print(model.test(test_x, test_y).error_rate)
     assert 0
-    from sklearn.neural_network import BernoulliRBM
 
 def test_batch1(zipcode_data):
     from esl_model.ch11.models import MiniBatchNN
     train_x, train_y, test_x, test_y, features = zipcode_data
 
-    model = MiniBatchNN(train_x[:420], train_y[:420], n_class=10, alpha=1, n_iter=10, mini_batch=45)
+    model = MiniBatchNN(train_x[:520], train_y[:520], n_class=10, alpha=0.45, n_iter=30, mini_batch=10, hidden_layer=[12])
     model.pre_processing()
     model.train()
 
     print(model.y_hat[:10].flatten())
     print(train_y[:10])
     print(model.rss)
-    print(model.test(test_x, test_y).error_rate)
-    assert 0
+    err = model.test(test_x, test_y).error_rate
+    print(err)
+    assert err < 0.24
