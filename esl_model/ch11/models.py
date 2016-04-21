@@ -32,15 +32,23 @@ class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
 
 
 class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
+    """
+    Depend on many book.
+    use mini batch update instead af batch update.
+
+    reference
+    ---------
+    http://ufldl.stanford.edu/wiki/index.php/Backpropagation_Algorithm
+    https://www.coursera.org/learn/machine-learning/lecture/1z9WW/backpropagation-algorithm
+    """
     def __init__(self, *args, mini_batch=10, hidden_layer=None, **kwargs):
         self.mini_batch = mini_batch
-        self.hidden_layer=hidden_layer or list()
+        self.hidden_layer = hidden_layer or list()
         super().__init__(*args, **kwargs)
-
 
     def _forward_propagation(self, x):
         a = x.copy()
-        layer_output = []
+        layer_output = list()
         layer_output.append(a)
         for theta, intercept in self.thetas:
             a = sigmoid(a@theta + intercept)
@@ -54,12 +62,9 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
         for (theta, intercept), a in zip(reversed(self.thetas), reversed(layer_output[:-1])):
             grad = a.T @ delta
             intercept_grad = np.sum(delta, axis=0)
-            # TODO: verify this right
             delta =  ((1-a)*a) * (delta @ theta.T)
             theta -= grad * self.alpha / self.mini_batch
             intercept -= intercept_grad * self.alpha / self.mini_batch
-
-
         return theta_grad[::-1]
 
     def _one_iter_train(self):
@@ -103,7 +108,9 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
 class MiniBatchNN(BaseMiniBatchNeuralNetwork):
     pass
 
-class NeuralNetworkN1(BaseNeuralNetwork):
+
+
+class IntuitiveNeuralNetworkN1(BaseNeuralNetwork):
     """
     depend on book, use batch update.
     """
@@ -124,12 +131,11 @@ class NeuralNetworkN1(BaseNeuralNetwork):
                 t = sigmoid(z)
                 # reference ng cousera course.
                 delta = -(y[i]-t)
-                nw = nw + (x[:,None]@delta[None,:])
+                nw = nw + (x[:, None]@delta[None, :])
                 nw0 = nw0 + delta
 
             weights = weights  - self.alpha*nw
             weights0 = weights0 - self.alpha*nw0
-
         self.nw = weights
         self.nw0 = weights0
 
@@ -140,7 +146,7 @@ class NeuralNetworkN1(BaseNeuralNetwork):
 
 
 
-class MiniBatchNN1(BaseNeuralNetwork):
+class IntuitiveMiniBatchNN1(BaseNeuralNetwork):
     """
     use mini batch
     """
@@ -152,7 +158,6 @@ class MiniBatchNN1(BaseNeuralNetwork):
         X = self.train_x
         y = self.train_y
         N = self.N
-
         _weights = np.random.uniform(-0.7, 0.7, (self.p + 1, self.n_class))
         weights = _weights[1:]
         weights0 = _weights[0]
@@ -174,10 +179,8 @@ class MiniBatchNN1(BaseNeuralNetwork):
 
                 weights -= self.alpha*nw
                 weights0 -= self.alpha*nw0
-
         self.weights = weights
         self.weights0 = weights0
-
 
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
@@ -185,7 +188,7 @@ class MiniBatchNN1(BaseNeuralNetwork):
         return self._inverse_matrix_to_class(y)
 
 
-class NN2(BaseNeuralNetwork):
+class IntuitiveNeuralNetwork2(BaseNeuralNetwork):
     def __init__(self, *args, hidden=12, iter_time=3,**kwargs):
         self.hidden = hidden
         self.iter_time = iter_time
@@ -195,7 +198,6 @@ class NN2(BaseNeuralNetwork):
         X = self.train_x
         y = self.train_y
         N = self.N
-
         _weights = np.random.uniform(-0.7, 0.7, (self.p + 1, self.hidden))
         weights = _weights[1:]
         weights0 = _weights[0]
@@ -203,10 +205,6 @@ class NN2(BaseNeuralNetwork):
         weights1 = _weights[1:]
         weights10 = _weights[0]
 
-        # w1 = np.zeros_like(weights1)
-        # w10 = np.zeros_like(weights10)
-        # w = np.zeros_like(weights)
-        # w0 = np.zeros_like(weights0)
         for r in range(self.iter_time):
             w1 = np.zeros_like(weights1)
             w10 = np.zeros_like(weights10)
@@ -220,7 +218,7 @@ class NN2(BaseNeuralNetwork):
                 z3 = a2 @ weights1 + weights10
                 a3 = sigmoid(z3)
 
-                delta3 = -2*(y[i] - a3) #* (1-a3)*a3
+                delta3 = -(y[i] - a3)
                 delta2 = weights1@delta3*a2*(1-a2)
 
                 w1 += self.alpha * (a2[:, None] @ delta3[None, :])
@@ -232,23 +230,16 @@ class NN2(BaseNeuralNetwork):
             weights -= w/N
             weights10 -= w10/N
             weights1 -= w1/N
-        # nw = weights
-        # nw0 = weights0
-        # NT = sigmoid(X @ (nw) + nw0)
-        # self._y_hat = NT.argmax(axis=1).reshape((-1, 1))
-        # self.nw = nw
-        # self.nw0 = nw0
+
         self.weights = weights
         self.weights0 =weights0
         self.weights1 = weights1
         self.weights10 = weights10
 
-
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
         a2 = sigmoid(X @ self.weights + self.weights0)
         y = sigmoid(a2 @ self.weights1 + self.weights10)
-        # return y.argmax(axis=1).reshape((-1,1))
         return self._inverse_matrix_to_class(y)
 
     @property
