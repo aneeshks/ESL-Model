@@ -1,6 +1,8 @@
 from ..base import BaseStatModel, ClassificationMixin
 from ..math_utils import sigmoid
 import numpy as np
+from itertools import chain
+
 
 
 class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
@@ -22,6 +24,84 @@ class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
     def rss(self):
         return 1 - np.sum(self.y_hat == self._raw_train_y) / self.N
 
+    def _forward_propagation(self, x):
+        raise NotImplementedError
+
+    def _back_propagation(self, target, layer_output):
+        raise NotImplementedError
+
+
+class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
+    def __init__(self, *args, mini_batch=10, hidden_layer=None, **kwargs):
+        self.mini_batch = mini_batch
+        self.hidden_layer=hidden_layer or list()
+        super().__init__(*args, **kwargs)
+
+
+    def _forward_propagation(self, x):
+        a = x.copy()
+        layer_output = []
+        layer_output.append(a)
+
+        for theta, intercept in self.thetas:
+            a = sigmoid(a@theta + intercept)
+            layer_output.append(a)
+        return layer_output
+
+    def _back_propagation(self, target, layer_output):
+        delta = -(target - layer_output[-1])
+        theta_grad = []
+
+        for (theta, intercept), a in zip(reversed(self.thetas), reversed(layer_output[:-1])):
+            grad = a.T @ delta
+            intercept_grad = np.sum(delta, axis=0)
+            # TODO: verify this right
+            delta =  ((1-a)*a).T * (theta @ delta.T)
+            theta -= grad * self.alpha
+            intercept -= intercept_grad * self.alpha
+
+
+        return theta_grad[::-1]
+
+    def _one_iter_train(self):
+        X = self.train_x
+        y = self.train_y
+        mini_batch = self.mini_batch
+        for j in range(0, self.N, mini_batch):
+            x = X[j: j + mini_batch]
+            target = y[j: j + mini_batch]
+            layer_output = self._forward_propagation(x)
+            self._back_propagation(target=target, layer_output=layer_output)
+
+    def _init_theta(self):
+        """
+        theta is weights
+        init all theta, depend on hidden layer
+        :return: No return, store the result in self.thetas which is a list
+        """
+        thetas = []
+        input_dimension = self.train_x.shape[1]
+        for target_dimension in chain(self.hidden_layer, [self.n_class]):
+            _theta = np.random.uniform(-0.7, 0.7, (input_dimension + 1, target_dimension))
+            theta = _theta[1:]
+            intercept = _theta[0]
+            thetas.append((theta, intercept))
+        self.thetas = thetas
+
+    def train(self):
+        self._init_theta()
+        for r in range(self.n_iter):
+            self._one_iter_train()
+
+    def predict(self, X: np.ndarray):
+        X = self._pre_processing_x(X)
+        y = self._forward_propagation(X)[-1]
+        return self._inverse_matrix_to_class(y)
+
+
+
+class MiniBatchNN(BaseMiniBatchNeuralNetwork):
+    pass
 
 class NeuralNetworkN1(BaseNeuralNetwork):
     """
