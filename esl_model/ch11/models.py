@@ -22,12 +22,18 @@ class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
 
     @property
     def rss(self):
-        return 1 - np.sum(self.y_hat == self._raw_train_y) / self.N
+        eps = 1e-50
+        y = self._predict(self._raw_train_x)
+        y[y < eps] = eps
+        return - np.sum(np.log(y) * self.train_y)
 
     def _forward_propagation(self, x):
         raise NotImplementedError
 
     def _back_propagation(self, target, layer_output):
+        raise NotImplementedError
+
+    def _predict(self, X):
         raise NotImplementedError
 
 
@@ -102,6 +108,13 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
         X = self._pre_processing_x(X)
         y = self._forward_propagation(X)[-1]
         return self._inverse_matrix_to_class(y)
+
+    @property
+    def rss(self):
+        eps = 1e-50
+        y = self._forward_propagation(self._raw_train_x)
+        y[y < eps] = eps
+        return - np.sum(np.log(y) * self.train_y)
 
 
 
