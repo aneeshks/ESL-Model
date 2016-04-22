@@ -5,6 +5,18 @@ from itertools import chain
 
 
 
+class IntuitiveMethodRssMixin:
+    """
+    this class for fix the Intuitive Network class rss method.
+    """
+    @property
+    def rss(self):
+        eps = 1e-50
+        y = self._y_hat
+        y[y < eps] = eps
+        return - np.sum(np.log(y) * self.train_y)
+
+
 class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
     def __init__(self, *args, n_iter=10, **kwargs):
         self.alpha = kwargs.pop('alpha')
@@ -22,18 +34,6 @@ class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
 
     @property
     def rss(self):
-        eps = 1e-50
-        y = self._predict(self._raw_train_x)
-        y[y < eps] = eps
-        return - np.sum(np.log(y) * self.train_y)
-
-    def _forward_propagation(self, x):
-        raise NotImplementedError
-
-    def _back_propagation(self, target, layer_output):
-        raise NotImplementedError
-
-    def _predict(self, X):
         raise NotImplementedError
 
 
@@ -112,7 +112,7 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
     @property
     def rss(self):
         eps = 1e-50
-        y = self._forward_propagation(self._raw_train_x)
+        y = self._forward_propagation(self._raw_train_x)[-1]
         y[y < eps] = eps
         return - np.sum(np.log(y) * self.train_y)
 
@@ -123,11 +123,10 @@ class MiniBatchNN(BaseMiniBatchNeuralNetwork):
 
 
 
-class IntuitiveNeuralNetworkN1(BaseNeuralNetwork):
+class IntuitiveNeuralNetworkN1(IntuitiveMethodRssMixin, BaseNeuralNetwork):
     """
     depend on book, use batch update.
     """
-
     def train(self):
         X = self.train_x
         y = self.train_y
@@ -152,6 +151,8 @@ class IntuitiveNeuralNetworkN1(BaseNeuralNetwork):
         self.nw = weights
         self.nw0 = weights0
 
+        self._y_hat = sigmoid(X@self.nw + self.nw0)
+
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
         y = sigmoid(X@self.nw + self.nw0)
@@ -159,7 +160,7 @@ class IntuitiveNeuralNetworkN1(BaseNeuralNetwork):
 
 
 
-class IntuitiveMiniBatchNN1(BaseNeuralNetwork):
+class IntuitiveMiniBatchNN1(IntuitiveMethodRssMixin, BaseNeuralNetwork):
     """
     use mini batch
     """
@@ -195,13 +196,15 @@ class IntuitiveMiniBatchNN1(BaseNeuralNetwork):
         self.weights = weights
         self.weights0 = weights0
 
+        self._y_hat = sigmoid(X @ self.weights + self.weights0)
+
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
         y = sigmoid(X @ self.weights + self.weights0)
         return self._inverse_matrix_to_class(y)
 
 
-class IntuitiveNeuralNetwork2(BaseNeuralNetwork):
+class IntuitiveNeuralNetwork2(IntuitiveMethodRssMixin, BaseNeuralNetwork):
     def __init__(self, *args, hidden=12, iter_time=3,**kwargs):
         self.hidden = hidden
         self.iter_time = iter_time
@@ -248,6 +251,9 @@ class IntuitiveNeuralNetwork2(BaseNeuralNetwork):
         self.weights0 =weights0
         self.weights1 = weights1
         self.weights10 = weights10
+
+        a2 = sigmoid(X @ self.weights + self.weights0)
+        self._y_hat = sigmoid(a2 @ self.weights1 + self.weights10)
 
     def predict(self, X: np.ndarray):
         X = self._pre_processing_x(X)
