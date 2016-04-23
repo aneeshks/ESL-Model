@@ -4,7 +4,6 @@ import numpy as np
 from itertools import chain
 
 
-
 class IntuitiveMethodRssMixin:
     """
     this class for fix the Intuitive Network class rss method.
