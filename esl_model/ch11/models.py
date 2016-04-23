@@ -264,3 +264,20 @@ class IntuitiveNeuralNetwork2(IntuitiveMethodRssMixin, BaseNeuralNetwork):
     @property
     def y_hat(self):
         return self.predict(self._raw_train_x)
+
+
+class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
+    """
+    On ESL pp 406, it says Net-3 use 3x3 receptive field and two pixel apart, which means that filter size is 3,
+    stride is 2, but (16 - 3)/2 + 1  is not a integer.
+    I reference http://cs231n.github.io/convolutional-networks/, which says it is invalid for *hyperparameters*.
+    However, I finally decide to move the receptive field from left to center and right to center simultaneously.
+    This make the output  be symmetric.
+
+    ref
+    -------
+    http://cs231n.github.io/convolutional-networks/
+    http://neuralnetworksanddeeplearning.com/chap6.html
+    ESL pp. 406
+    """
+
