@@ -37,92 +37,6 @@ class BaseNeuralNetwork(ClassificationMixin, BaseStatModel):
         raise NotImplementedError
 
 
-class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
-    """
-    Depend on many book.
-    use mini batch update instead af batch update.
-
-    reference
-    ---------
-    http://ufldl.stanford.edu/wiki/index.php/Backpropagation_Algorithm
-    https://www.coursera.org/learn/machine-learning/lecture/1z9WW/backpropagation-algorithm
-    """
-    def __init__(self, *args, mini_batch=10, hidden_layer=None, **kwargs):
-        self.mini_batch = mini_batch
-        self.hidden_layer = hidden_layer or list()
-        super().__init__(*args, **kwargs)
-
-    def _forward_propagation(self, x):
-        a = x.copy()
-        layer_output = list()
-        layer_output.append(a)
-        for theta, intercept in self.thetas:
-            a = sigmoid(a@theta + intercept)
-            layer_output.append(a)
-        return layer_output
-
-    def _back_propagation(self, target, layer_output):
-        delta = -(target - layer_output[-1])
-        theta_grad = []
-
-        for (theta, intercept), a in zip(reversed(self.thetas), reversed(layer_output[:-1])):
-            grad = a.T @ delta
-            intercept_grad = np.sum(delta, axis=0)
-            delta =  ((1-a)*a) * (delta @ theta.T)
-            theta -= grad * self.alpha / self.mini_batch
-            intercept -= intercept_grad * self.alpha / self.mini_batch
-        return theta_grad[::-1]
-
-    def _one_iter_train(self):
-        X = self.train_x
-        y = self.train_y
-        mini_batch = self.mini_batch
-        for j in range(0, self.N, mini_batch):
-            x = X[j: j + mini_batch]
-            target = y[j: j + mini_batch]
-            layer_output = self._forward_propagation(x)
-            self._back_propagation(target=target, layer_output=layer_output)
-
-    def _init_theta(self):
-        """
-        theta is weights
-        init all theta, depend on hidden layer
-        :return: No return, store the result in self.thetas which is a list
-        """
-        thetas = []
-        input_dimension = self.train_x.shape[1]
-        for target_dimension in chain(self.hidden_layer, [self.n_class]):
-            _theta = np.random.uniform(-0.7, 0.7, (input_dimension + 1, target_dimension))
-            theta = _theta[1:]
-            intercept = _theta[0]
-            thetas.append((theta, intercept))
-            input_dimension = target_dimension
-        self.thetas = thetas
-
-    def train(self):
-        self._init_theta()
-        for r in range(self.n_iter):
-            self._one_iter_train()
-
-    def predict(self, X: np.ndarray):
-        X = self._pre_processing_x(X)
-        y = self._forward_propagation(X)[-1]
-        return self._inverse_matrix_to_class(y)
-
-    @property
-    def rss(self):
-        eps = 1e-50
-        y = self._forward_propagation(self._raw_train_x)[-1]
-        y[y < eps] = eps
-        return - np.sum(np.log(y) * self.train_y)
-
-
-
-class MiniBatchNN(BaseMiniBatchNeuralNetwork):
-    pass
-
-
-
 class IntuitiveNeuralNetworkN1(IntuitiveMethodRssMixin, BaseNeuralNetwork):
     """
     depend on book, use batch update.
@@ -157,7 +71,6 @@ class IntuitiveNeuralNetworkN1(IntuitiveMethodRssMixin, BaseNeuralNetwork):
         X = self._pre_processing_x(X)
         y = sigmoid(X@self.nw + self.nw0)
         return self._inverse_matrix_to_class(y)
-
 
 
 class IntuitiveMiniBatchNN1(IntuitiveMethodRssMixin, BaseNeuralNetwork):
@@ -264,6 +177,98 @@ class IntuitiveNeuralNetwork2(IntuitiveMethodRssMixin, BaseNeuralNetwork):
     @property
     def y_hat(self):
         return self.predict(self._raw_train_x)
+
+
+
+class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
+    """
+    Depend on many book.
+    use mini batch update instead af batch update.
+
+    reference
+    ---------
+    http://ufldl.stanford.edu/wiki/index.php/Backpropagation_Algorithm
+    https://www.coursera.org/learn/machine-learning/lecture/1z9WW/backpropagation-algorithm
+    """
+    def __init__(self, *args, mini_batch=10, hidden_layer=None, **kwargs):
+        self.mini_batch = mini_batch
+        self.hidden_layer = hidden_layer or list()
+        super().__init__(*args, **kwargs)
+
+    def _forward_propagation(self, x):
+        raise NotImplementedError
+
+    def _back_propagation(self, target, layer_output):
+        raise NotImplementedError
+
+    def _one_iter_train(self):
+        X = self.train_x
+        y = self.train_y
+        mini_batch = self.mini_batch
+        for j in range(0, self.N, mini_batch):
+            x = X[j: j + mini_batch]
+            target = y[j: j + mini_batch]
+            layer_output = self._forward_propagation(x)
+            self._back_propagation(target=target, layer_output=layer_output)
+
+    def _init_theta(self):
+        raise NotImplementedError
+
+    def train(self):
+        self._init_theta()
+        for r in range(self.n_iter):
+            self._one_iter_train()
+
+    def predict(self, X: np.ndarray):
+        X = self._pre_processing_x(X)
+        y = self._forward_propagation(X)[-1]
+        return self._inverse_matrix_to_class(y)
+
+    @property
+    def rss(self):
+        eps = 1e-50
+        y = self._forward_propagation(self._raw_train_x)[-1]
+        y[y < eps] = eps
+        return - np.sum(np.log(y) * self.train_y)
+
+
+class MiniBatchNN(BaseMiniBatchNeuralNetwork):
+    def _init_theta(self):
+        """
+        theta is weights
+        init all theta, depend on hidden layer
+        :return: No return, store the result in self.thetas which is a list
+        """
+        thetas = []
+        input_dimension = self.train_x.shape[1]
+        for target_dimension in chain(self.hidden_layer, [self.n_class]):
+            _theta = np.random.uniform(-0.7, 0.7, (input_dimension + 1, target_dimension))
+            theta = _theta[1:]
+            intercept = _theta[0]
+            thetas.append((theta, intercept))
+            input_dimension = target_dimension
+        self.thetas = thetas
+
+    def _forward_propagation(self, x):
+        a = x.copy()
+        layer_output = list()
+        layer_output.append(a)
+        for theta, intercept in self.thetas:
+            a = sigmoid(a @ theta + intercept)
+            layer_output.append(a)
+        return layer_output
+
+    def _back_propagation(self, target, layer_output):
+        delta = -(target - layer_output[-1])
+        theta_grad = []
+
+        for (theta, intercept), a in zip(reversed(self.thetas), reversed(layer_output[:-1])):
+            grad = a.T @ delta
+            intercept_grad = np.sum(delta, axis=0)
+            delta = ((1 - a) * a) * (delta @ theta.T)
+            theta -= grad * self.alpha / self.mini_batch
+            intercept -= intercept_grad * self.alpha / self.mini_batch
+        return theta_grad[::-1]
 
 
 class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
