@@ -1,5 +1,5 @@
 from ..base import BaseStatModel, ClassificationMixin
-from ..math_utils import sigmoid
+from ..math_utils import sigmoid, shape2size
 import numpy as np
 from itertools import chain
 
@@ -194,6 +194,10 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
         self.hidden_layer = hidden_layer or list()
         super().__init__(*args, **kwargs)
 
+    @staticmethod
+    def random_weight_matrix(shape):
+        return np.random.uniform(-0.7, 0.7, shape)
+
     def _forward_propagation(self, x):
         raise NotImplementedError
 
@@ -284,4 +288,30 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
     http://neuralnetworksanddeeplearning.com/chap6.html
     ESL pp. 406
     """
+    _input_shape = (16, 16)
+
+    def __init__(self, *args, stride=2, filter_shapes=None, **kwargs):
+        self.stride = stride
+        self.filter_shapes = filter_shapes
+        super().__init__(*args, **kwargs)
+
+    def _pre_processing_x(self, X: np.ndarray):
+        x = super()._pre_processing_x(X)
+        x = x.reshape(*self._input_shape)
+        return x
+
+
+    def _init_theta(self):
+        thetas = []
+
+        for filter_shape, layer_shape in zip(self.filter_shapes, self.hidden_layer):
+            filter_size = shape2size(filter_shape)
+            layer_size = shape2size(layer_shape)
+            random_matrix = self.random_weight_matrix((layer_size, filter_size + 1))
+            # every row store weights for one receptive field
+            weights = random_matrix[:, 1:]
+            intercepts = random_matrix[:, 0]
+            thetas.append((weights, intercepts))
+        self.thetas = thetas
+
 

@@ -5,6 +5,10 @@ from scipy.special import expit
 sigmoid = expit
 
 
+def shape2size(shape):
+    return shape[0] * shape[1]
+
+
 def generate_orthogonal_matrix(N):
     """
     with random permutation of coordinate axes
