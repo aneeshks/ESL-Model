@@ -1,7 +1,7 @@
 from ..base import BaseStatModel, ClassificationMixin
 from ..math_utils import sigmoid, shape2size
 import numpy as np
-from itertools import chain
+from itertools import chain, product as itertools_product
 
 
 class IntuitiveMethodRssMixin:
@@ -312,6 +312,60 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
             weights = random_matrix[:, 1:]
             intercepts = random_matrix[:, 0]
             thetas.append((weights, intercepts))
+
+        # fully connect weights
+        random_matrix = self.random_weight_matrix((shape2size(self.hidden_layer[-1]) + 1, self.n_class))
+        weights = random_matrix[1:]
+        intercepts = random_matrix[0]
+        thetas.append((weights, intercepts))
+
         self.thetas = thetas
+
+
+
+    def _forward_propagation(self, x):
+        layer_output = list()
+        layer_output.append(x)
+
+        for filter_shape, layer_shape, (weights, intercepts) in zip(self.filter_shapes, self.hidden_layer, self.thetas):
+            filter_size = filter_shape[0]
+            filter_vector = np.arange(0, layer_shape[0]/2, self.stride)
+            neg_filter_vector = np.arange(layer_shape[0] - 1, layer_shape[0]/2, -self.stride) - filter_size
+
+            # available receptive field top left coordinate.
+            x_points = y_points = np.concatenate((filter_vector, neg_filter_vector))
+
+            top_lefts = itertools_product(x_points, y_points)
+            results = []
+            for (cx, cy), weight, intercept in zip(top_lefts, weights, intercepts):
+                field = x[:, cy: cy+filter_size, cx: cx+filter_size]
+
+                # field multiply weight and add intercept, then sigmoid it, sum the result units in field to one unit.
+                # because we use mini-batch, the first axis is the number of batch, we sum each field for each
+                # observation. After that we reshape the result to column vector, which shape is (mini_batch, 1)
+                node_result = np.sum(sigmoid(weight * field + intercept), axis=(1, 2)).reshape((-1, 1))
+                results.append(node_result)
+
+            # reshape the result to to 3d. first axis is batch size, the 2st and 3rd is layer width and height.
+            # and we got the next layer.
+            x =  np.dstack(results).reshape((-1, *layer_shape))
+            layer_output.append(x)
+
+        # finally, do fully connect.
+        x = x.reshape(-1, shape2size(x.shape))
+
+        output = sigmoid(x @ self.thetas[-1][0] + self.thetas[-1][1])
+        layer_output.append(output)
+        return layer_output
+
+
+
+
+
+
+
+
+
+
 
 
