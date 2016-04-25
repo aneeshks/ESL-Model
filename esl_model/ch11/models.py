@@ -263,7 +263,7 @@ class MiniBatchNN(BaseMiniBatchNeuralNetwork):
 
     def _back_propagation(self, target, layer_output):
         delta = -(target - layer_output[-1])
-        theta_grad = []
+        # theta_grad = []
 
         for (theta, intercept), a in zip(reversed(self.thetas), reversed(layer_output[:-1])):
             grad = a.T @ delta
@@ -271,7 +271,7 @@ class MiniBatchNN(BaseMiniBatchNeuralNetwork):
             delta = ((1 - a) * a) * (delta @ theta.T)
             theta -= grad * self.alpha / self.mini_batch
             intercept -= intercept_grad * self.alpha / self.mini_batch
-        return theta_grad[::-1]
+        # return theta_grad[::-1]
 
 
 class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
