@@ -280,7 +280,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
     stride is 2, but (16 - 3)/2 + 1  is not a integer.
     I reference http://cs231n.github.io/convolutional-networks/, which says it is invalid for *hyperparameters*.
     However, I finally decide to move the receptive field from left to center and right to center simultaneously.
-    This make the output  be symmetric.
+    This make the output be symmetric.
 
     ref
     -------
@@ -309,8 +309,8 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
             layer_size = shape2size(layer_shape)
             random_matrix = self.random_weight_matrix((layer_size, filter_size + 1))
             # every row store weights for one receptive field
-            weights = random_matrix[:, 1:]
-            intercepts = random_matrix[:, 0]
+            weights = random_matrix[:, 1:].reshape((layer_size, *filter_shape))
+            intercepts = random_matrix[:, 0].reshape((-1, 1))
             thetas.append((weights, intercepts))
 
         # fully connect weights
@@ -351,12 +351,51 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
             x =  np.dstack(results).reshape((-1, *layer_shape))
             layer_output.append(x)
 
-        # finally, do fully connect.
-        x = x.reshape(-1, shape2size(x.shape))
+        # finally, do fully connect propagation
+        x = x.reshape((-1, shape2size(x.shape)))
 
         output = sigmoid(x @ self.thetas[-1][0] + self.thetas[-1][1])
         layer_output.append(output)
         return layer_output
+
+
+    def _back_propagation(self, target, layer_output):
+        delta = layer_output[-1] - target
+        # back propagation for fully connect
+        theta, intercept = self.thetas[-1]
+        a = layer_output[-2].reshape(-1, shape2size(layer_output[-2].shape))
+        theta_grad = a.T @ delta
+        intercept_grad = np.sum(delta, axis=0)
+        theta -= theta_grad * self.alpha / self.mini_batch
+        intercept -= intercept_grad * self.alpha / self.mini_batch
+        delta = ((1 - a) * a) * (delta @ theta.T)
+
+        # reshape delta to field
+        # delta = delta.reshape((-1, *layer_output[-2].shape))
+
+        reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes[:-1]))
+        for (thetas, intercepts), a, filter_shape in zip(*reversed_info):
+            layer_shape = a.shape
+            filter_size = filter_shape[0]
+            filter_vector = np.arange(0, layer_shape[0] / 2, self.stride)
+            neg_filter_vector = np.arange(layer_shape[0] - 1, layer_shape[0] / 2, -self.stride) - filter_size
+
+            # available receptive field top left coordinate.
+            x_points = y_points = np.concatenate((filter_vector, neg_filter_vector))
+
+            top_lefts = itertools_product(x_points, y_points)
+            next_delta = np.zeros_like(a)
+            for (cx, cy), thetas, intercept, unit_delta in zip(top_lefts, thetas, intercepts, delta):
+                field_slice = np.s_[:, cy: cy + filter_size, cx: cx + filter_size]
+                field = a[field_slice]
+                theta_grad = field * unit_delta
+                intercept_grad = unit_delta
+                theta -= theta_grad * self.alpha / self.mini_batch
+                intercept -= intercept_grad * self.alpha / self.mini_batch
+                next_delta[field_slice] += field * (1-field) * theta * unit_delta
+
+            delta = next_delta.copy()
+
 
 
 
