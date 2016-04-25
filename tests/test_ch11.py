@@ -96,15 +96,15 @@ def test_nn2(zipcode_data):
 def test_nn3(zipcode_data):
     from esl_model.ch11.models import LocallyConnectNN
     train_x, train_y, test_x, test_y, features = zipcode_data
-    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=0.44, n_iter=25, mini_batch=5,
+    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=0.04, n_iter=20, mini_batch=10,
                         hidden_layer_shape=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
 
 
     model.pre_processing()
     model.train()
 
-    print(model.y_hat[:10].flatten())
-    print(train_y[:10])
+    print(model.y_hat[:16].flatten())
+    print(train_y[:16])
     print(model.rss)
     err = model.test(test_x, test_y).error_rate
     print(err)

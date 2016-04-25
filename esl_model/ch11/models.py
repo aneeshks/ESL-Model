@@ -230,7 +230,8 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
     @property
     def rss(self):
         eps = 1e-50
-        y = self._forward_propagation(self._raw_train_x)[-1]
+        X = self._pre_processing_x(self._raw_train_x)
+        y = self._forward_propagation(X)[-1]
         y[y < eps] = eps
         return - np.sum(np.log(y) * self.train_y)
 
@@ -341,7 +342,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         layer_width = selected_layer_shape[0]
         direction = np.arange(0, layer_width / 2, stride)
         neg_direction = np.arange(layer_width, layer_width / 2, -stride) - fs
-        endpoints = [ep for ep in chain(direction, neg_direction)]
+        endpoints = [int(ep) for ep in chain(direction, neg_direction)]
         top_left_iter = itertools_product(endpoints, endpoints)
         return [np.s_[:, cy: cy+fs, cx: cx+fs] for cx, cy in top_left_iter]
 
@@ -390,30 +391,33 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         delta = layer_output[-1] - target
         # back propagation for fully connect
         theta, intercept = self.thetas[-1]
-        a = layer_output[-2].reshape(-1, shape2size(layer_output[-2].shape))
+        a = layer_output[-2].reshape(-1, shape2size(layer_output[-2].shape[1:]))
         theta_grad = a.T @ delta
         intercept_grad = np.sum(delta, axis=0)
         theta -= theta_grad * self.alpha / self.mini_batch
         intercept -= intercept_grad * self.alpha / self.mini_batch
         delta = ((1 - a) * a) * (delta @ theta.T)
-
         # reshape delta to field
         # delta = delta.reshape((-1, *layer_output[-2].shape))
 
-        reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes[:-1]))
+        reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes))
         for (thetas, intercepts), a, filter_shape in zip(*reversed_info):
-            layer_shape = a.shape
+            layer_shape = a.shape[1:]
             next_delta = np.zeros_like(a)
             field_slices = self._gen_field_select_slice(filter_shape, layer_shape, stride=self.stride)
-            for f_slice, thetas, intercept, unit_delta in zip(field_slices, thetas, intercepts, delta):
+            # transpose delta, make shape (batch, layer_size) -> (layer_size, batch)
+            # then reshape the unit delta to (batch, 1, 1)
+            for f_slice, theta, intercept, _unit_delta in zip(field_slices, thetas, intercepts, delta.T):
+                unit_delta = _unit_delta.reshape((-1, 1, 1))
                 field = a[f_slice]
-                theta_grad = field * unit_delta
-                intercept_grad = unit_delta
+                theta_grad = np.sum(field * unit_delta, axis=0)
+                intercept_grad = np.sum(unit_delta)
                 theta -= theta_grad * self.alpha / self.mini_batch
                 intercept -= intercept_grad * self.alpha / self.mini_batch
                 next_delta[f_slice] += field * (1-field) * theta * unit_delta
 
-            delta = next_delta.copy()
+            delta = next_delta.reshape((-1, shape2size(layer_shape)))
+
 
 
 
