@@ -64,7 +64,7 @@ def test_nn1(zipcode_data):
     train_x, train_y, test_x, test_y, features = zipcode_data
 
     model = MiniBatchNN(train_x[:520], train_y[:520], n_class=10, alpha=0.45, n_iter=25, mini_batch=10,
-                        hidden_layer=None)
+                        hidden_layer_shape=None)
     model.pre_processing()
     model.train()
 
@@ -81,7 +81,7 @@ def test_nn2(zipcode_data):
     train_x, train_y, test_x, test_y, features = zipcode_data
 
     model = MiniBatchNN(train_x[:320], train_y[:320], n_class=10, alpha=0.44, n_iter=25, mini_batch=5,
-                        hidden_layer=[12])
+                        hidden_layer_shape=[12])
     model.pre_processing()
     model.train()
 
@@ -97,7 +97,7 @@ def test_nn3(zipcode_data):
     from esl_model.ch11.models import LocallyConnectNN
     train_x, train_y, test_x, test_y, features = zipcode_data
     model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=0.44, n_iter=25, mini_batch=5,
-                        hidden_layer=[(16,16), (8,8)], filter_shapes=[(3,3), (5,5)], stride=2)
+                        hidden_layer=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
 
 
     model.pre_processing()

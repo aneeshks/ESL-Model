@@ -189,9 +189,9 @@ class BaseMiniBatchNeuralNetwork(BaseNeuralNetwork):
     http://ufldl.stanford.edu/wiki/index.php/Backpropagation_Algorithm
     https://www.coursera.org/learn/machine-learning/lecture/1z9WW/backpropagation-algorithm
     """
-    def __init__(self, *args, mini_batch=10, hidden_layer=None, **kwargs):
+    def __init__(self, *args, mini_batch=10, hidden_layer_shape=None, **kwargs):
         self.mini_batch = mini_batch
-        self.hidden_layer = hidden_layer or list()
+        self.hidden_layer_shape = hidden_layer_shape or list()
         super().__init__(*args, **kwargs)
 
     @staticmethod
@@ -244,7 +244,7 @@ class MiniBatchNN(BaseMiniBatchNeuralNetwork):
         """
         thetas = []
         input_dimension = self.train_x.shape[1]
-        for target_dimension in chain(self.hidden_layer, [self.n_class]):
+        for target_dimension in chain(self.hidden_layer_shape, [self.n_class]):
             _theta = np.random.uniform(-0.7, 0.7, (input_dimension + 1, target_dimension))
             theta = _theta[1:]
             intercept = _theta[0]
@@ -297,14 +297,14 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
 
     def _pre_processing_x(self, X: np.ndarray):
         x = super()._pre_processing_x(X)
-        x = x.reshape(*self._input_shape)
+        x = x.reshape((x.shape[0], *self._input_shape))
         return x
 
 
     def _init_theta(self):
         thetas = []
 
-        for filter_shape, layer_shape in zip(self.filter_shapes, self.hidden_layer):
+        for filter_shape, layer_shape in zip(self.filter_shapes, self.hidden_layer_shape):
             filter_size = shape2size(filter_shape)
             layer_size = shape2size(layer_shape)
             random_matrix = self.random_weight_matrix((layer_size, filter_size + 1))
@@ -314,7 +314,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
             thetas.append((weights, intercepts))
 
         # fully connect weights
-        random_matrix = self.random_weight_matrix((shape2size(self.hidden_layer[-1]) + 1, self.n_class))
+        random_matrix = self.random_weight_matrix((shape2size(self.hidden_layer_shape[-1]) + 1, self.n_class))
         weights = random_matrix[1:]
         intercepts = random_matrix[0]
         thetas.append((weights, intercepts))
@@ -322,20 +322,27 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         self.thetas = thetas
 
 
+    @property
+    def local_connect_layer(self):
+        ret = [self._input_shape]
+        ret.extend(self.hidden_layer_shape[:-1])
+        return ret
 
     def _forward_propagation(self, x):
         layer_output = list()
         layer_output.append(x)
 
-        for filter_shape, layer_shape, (weights, intercepts) in zip(self.filter_shapes, self.hidden_layer, self.thetas):
+        for filter_shape, layer_shape, (weights, intercepts) in zip(self.filter_shapes, self.hidden_layer_shape, self.thetas):
             filter_size = filter_shape[0]
             filter_vector = np.arange(0, layer_shape[0]/2, self.stride)
             neg_filter_vector = np.arange(layer_shape[0] - 1, layer_shape[0]/2, -self.stride) - filter_size
 
             # available receptive field top left coordinate.
-            x_points = y_points = np.concatenate((filter_vector, neg_filter_vector))
-
-            top_lefts = itertools_product(x_points, y_points)
+            x_points = np.concatenate((filter_vector, neg_filter_vector))
+            print(len(x_points))
+            y_points = x_points.copy()
+            top_lefts = list(itertools_product(x_points, y_points))
+            print(len(top_lefts))
             results = []
             for (cx, cy), weight, intercept in zip(top_lefts, weights, intercepts):
                 field = x[:, cy: cy+filter_size, cx: cx+filter_size]
@@ -348,6 +355,8 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
 
             # reshape the result to to 3d. first axis is batch size, the 2st and 3rd is layer width and height.
             # and we got the next layer.
+            print("351", layer_shape, len(results))
+
             x =  np.dstack(results).reshape((-1, *layer_shape))
             layer_output.append(x)
 
