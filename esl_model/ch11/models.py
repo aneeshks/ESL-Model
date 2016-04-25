@@ -328,24 +328,44 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         ret.extend(self.hidden_layer_shape[:-1])
         return ret
 
+    @staticmethod
+    def _gen_field_select_slice(filter_shape, selected_layer_shape, stride=2):
+        """
+        generate a receptive field select slice
+        :param filter_shape: receptive shape, must be rectangle.
+        :param selected_layer_shape: the layer that be selected, width and height must be equal and be even
+        :param stride:
+        :return: list of slice
+        """
+        fs = filter_shape[0]
+        layer_width = selected_layer_shape[0]
+        direction = np.arange(0, layer_width / 2, stride)
+        neg_direction = np.arange(layer_width, layer_width / 2, -stride) - fs
+        endpoints = [ep for ep in chain(direction, neg_direction)]
+        top_left_iter = itertools_product(endpoints, endpoints)
+        return [np.s_[:, cy: cy+fs, cx: cx+fs] for cx, cy in top_left_iter]
+
+
+
     def _forward_propagation(self, x):
         layer_output = list()
         layer_output.append(x)
 
-        for filter_shape, layer_shape, (weights, intercepts) in zip(self.filter_shapes, self.hidden_layer_shape, self.thetas):
-            filter_size = filter_shape[0]
-            filter_vector = np.arange(0, layer_shape[0]/2, self.stride)
-            neg_filter_vector = np.arange(layer_shape[0] - 1, layer_shape[0]/2, -self.stride) - filter_size
-
-            # available receptive field top left coordinate.
-            x_points = np.concatenate((filter_vector, neg_filter_vector))
-            print(len(x_points))
-            y_points = x_points.copy()
-            top_lefts = list(itertools_product(x_points, y_points))
-            print(len(top_lefts))
+        for filter_shape, target_layer_shape, (weights, intercepts) in zip(self.filter_shapes, self.hidden_layer_shape, self.thetas):
+            # filter_size = filter_shape[0]
+            # filter_vector = np.arange(0, layer_shape[0]/2, self.stride)
+            # neg_filter_vector = np.arange(layer_shape[0] - 1, layer_shape[0]/2, -self.stride) - filter_size
+            #
+            # # available receptive field top left coordinate.
+            # x_points = np.concatenate((filter_vector, neg_filter_vector))
+            # print(len(x_points))
+            # y_points = x_points.copy()
+            # top_lefts = list(itertools_product(x_points, y_points))
+            # print(len(top_lefts))
             results = []
-            for (cx, cy), weight, intercept in zip(top_lefts, weights, intercepts):
-                field = x[:, cy: cy+filter_size, cx: cx+filter_size]
+            field_slices = self._gen_field_select_slice(filter_shape, x.shape[1:], stride=self.stride)
+            for f_slice, weight, intercept in zip(field_slices, weights, intercepts):
+                field = x[f_slice]
 
                 # field multiply weight and add intercept, then sigmoid it, sum the result units in field to one unit.
                 # because we use mini-batch, the first axis is the number of batch, we sum each field for each
@@ -355,14 +375,12 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
 
             # reshape the result to to 3d. first axis is batch size, the 2st and 3rd is layer width and height.
             # and we got the next layer.
-            print("351", layer_shape, len(results))
 
-            x =  np.dstack(results).reshape((-1, *layer_shape))
+            x =  np.dstack(results).reshape((-1, *target_layer_shape))
             layer_output.append(x)
 
         # finally, do fully connect propagation
-        x = x.reshape((-1, shape2size(x.shape)))
-
+        x = x.reshape((-1, shape2size(x.shape[1:])))
         output = sigmoid(x @ self.thetas[-1][0] + self.thetas[-1][1])
         layer_output.append(output)
         return layer_output
@@ -385,23 +403,15 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes[:-1]))
         for (thetas, intercepts), a, filter_shape in zip(*reversed_info):
             layer_shape = a.shape
-            filter_size = filter_shape[0]
-            filter_vector = np.arange(0, layer_shape[0] / 2, self.stride)
-            neg_filter_vector = np.arange(layer_shape[0] - 1, layer_shape[0] / 2, -self.stride) - filter_size
-
-            # available receptive field top left coordinate.
-            x_points = y_points = np.concatenate((filter_vector, neg_filter_vector))
-
-            top_lefts = itertools_product(x_points, y_points)
             next_delta = np.zeros_like(a)
-            for (cx, cy), thetas, intercept, unit_delta in zip(top_lefts, thetas, intercepts, delta):
-                field_slice = np.s_[:, cy: cy + filter_size, cx: cx + filter_size]
-                field = a[field_slice]
+            field_slices = self._gen_field_select_slice(filter_shape, layer_shape, stride=self.stride)
+            for f_slice, thetas, intercept, unit_delta in zip(field_slices, thetas, intercepts, delta):
+                field = a[f_slice]
                 theta_grad = field * unit_delta
                 intercept_grad = unit_delta
                 theta -= theta_grad * self.alpha / self.mini_batch
                 intercept -= intercept_grad * self.alpha / self.mini_batch
-                next_delta[field_slice] += field * (1-field) * theta * unit_delta
+                next_delta[f_slice] += field * (1-field) * theta * unit_delta
 
             delta = next_delta.copy()
 
