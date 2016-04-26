@@ -96,7 +96,7 @@ def test_nn2(zipcode_data):
 def test_nn3(zipcode_data):
     from esl_model.ch11.models import LocallyConnectNN
     train_x, train_y, test_x, test_y, features = zipcode_data
-    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=0.5, n_iter=15, mini_batch=5,
+    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=1, n_iter=30, mini_batch=5,
                         hidden_layer_shape=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
 
 

@@ -2,7 +2,7 @@ from ..base import BaseStatModel, ClassificationMixin
 from ..math_utils import sigmoid, shape2size
 import numpy as np
 from itertools import chain, product as itertools_product
-
+from ..utils import quick_assert as qa
 
 class IntuitiveMethodRssMixin:
     """
@@ -396,9 +396,9 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         a = layer_output[-2].reshape(-1, shape2size(layer_output[-2].shape[1:]))
         theta_grad = a.T @ delta
         intercept_grad = np.sum(delta, axis=0)
+        delta = ((1 - a) * a) * (delta @ theta.T)
         theta -= theta_grad * self.alpha / self.mini_batch
         intercept -= intercept_grad * self.alpha / self.mini_batch
-        delta = ((1 - a) * a) * (delta @ theta.T)
         # reshape delta to field
         # delta = delta.reshape((-1, *layer_output[-2].shape))
 
@@ -417,6 +417,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
                 next_delta[f_slice] += field * (1 - field) * theta * unit_delta
                 theta -= theta_grad * self.alpha / self.mini_batch
                 intercept -= intercept_grad * self.alpha / self.mini_batch
+
 
             delta = next_delta.reshape((-1, shape2size(layer_shape)))
 
