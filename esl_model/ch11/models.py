@@ -412,9 +412,9 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
                 field = a[f_slice]
                 theta_grad = np.sum(field * unit_delta, axis=0)
                 intercept_grad = np.sum(unit_delta)
+                next_delta[f_slice] += field * (1 - field) * theta * unit_delta
                 theta -= theta_grad * self.alpha / self.mini_batch
                 intercept -= intercept_grad * self.alpha / self.mini_batch
-                next_delta[f_slice] += field * (1-field) * theta * unit_delta
 
             delta = next_delta.reshape((-1, shape2size(layer_shape)))
 
