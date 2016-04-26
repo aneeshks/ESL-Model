@@ -342,9 +342,11 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         layer_width = selected_layer_shape[0]
         direction = np.arange(0, layer_width / 2, stride)
         neg_direction = np.arange(layer_width, layer_width / 2, -stride) - fs
-        endpoints = [int(ep) for ep in chain(direction, neg_direction)]
+        endpoints = [int(ep) for ep in chain(direction, neg_direction[::-1])]
         top_left_iter = itertools_product(endpoints, endpoints)
-        return [np.s_[:, cy: cy+fs, cx: cx+fs] for cx, cy in top_left_iter]
+        # print(list(top_left_iter))
+        # assert 0
+        return [np.s_[:, cy: cy+fs, cx: cx+fs] for cy, cx in top_left_iter]
 
 
 
