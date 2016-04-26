@@ -373,7 +373,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
                 # field multiply weight and add intercept, then sigmoid it, sum the result units in field to one unit.
                 # because we use mini-batch, the first axis is the number of batch, we sum each field for each
                 # observation. After that we reshape the result to column vector, which shape is (mini_batch, 1)
-                node_result = np.sum(sigmoid(weight * field + intercept), axis=(1, 2)).reshape((-1, 1))
+                node_result = sigmoid(np.sum(weight * field + intercept, axis=(1, 2))).reshape((-1, 1))
                 results.append(node_result)
 
             # reshape the result to to 3d. first axis is batch size, the 2st and 3rd is layer width and height.
