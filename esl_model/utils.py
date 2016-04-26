@@ -11,3 +11,8 @@ def lazy_method(func):
             setattr(self, store_name, value)
         return value
     return wrapper
+
+
+def quick_assert(*args):
+    print(*args)
+    assert 0
