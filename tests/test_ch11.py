@@ -96,7 +96,7 @@ def test_nn2(zipcode_data):
 def test_nn3(zipcode_data):
     from esl_model.ch11.models import LocallyConnectNN
     train_x, train_y, test_x, test_y, features = zipcode_data
-    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=1, n_iter=30, mini_batch=5,
+    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=3, n_iter=10, mini_batch=10,
                         hidden_layer_shape=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
 
 
@@ -108,6 +108,9 @@ def test_nn3(zipcode_data):
     print(model.rss)
     err = model.test(test_x, test_y).error_rate
     print(err)
-    print(model.thetas[1][1][:14])
+    # print(model.thetas[1][1][:14])
+    print(model._layout[-1][:3])
+    print('d', np.sum(model._d[:1]))
+    print('fd', np.sum(model._fd[:1]))
     assert err < 0.24
     assert 0

@@ -342,10 +342,8 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         layer_width = selected_layer_shape[0]
         direction = np.arange(0, layer_width / 2, stride)
         neg_direction = np.arange(layer_width, layer_width / 2, -stride) - fs
-        endpoints = [int(ep) for ep in chain(direction, neg_direction[::-1])]
+        endpoints = sorted([int(ep) for ep in chain(direction, neg_direction[::-1])])
         top_left_iter = itertools_product(endpoints, endpoints)
-        # print(list(top_left_iter))
-        # assert 0
         return [np.s_[:, cy: cy+fs, cx: cx+fs] for cy, cx in top_left_iter]
 
 
@@ -367,6 +365,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
             # print(len(top_lefts))
             results = []
             field_slices = self._gen_field_select_slice(filter_shape, x.shape[1:], stride=self.stride)
+            # if filter_shape[0] == 5: qa(field_slices)
             for f_slice, weight, intercept in zip(field_slices, weights, intercepts):
                 field = x[f_slice]
 
@@ -390,7 +389,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
 
 
     def _back_propagation(self, target, layer_output):
-        delta = layer_output[-1] - target
+        delta = (layer_output[-1] - target)
         # back propagation for fully connect
         theta, intercept = self.thetas[-1]
         a = layer_output[-2].reshape(-1, shape2size(layer_output[-2].shape[1:]))
@@ -398,7 +397,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         intercept_grad = np.sum(delta, axis=0)
         delta = ((1 - a) * a) * (delta @ theta.T)
         theta -= theta_grad * self.alpha / self.mini_batch
-        intercept -= intercept_grad * self.alpha / self.mini_batch
+        # intercept -= intercept_grad * self.alpha / self.mini_batch
         # reshape delta to field
         # delta = delta.reshape((-1, *layer_output[-2].shape))
 
@@ -414,13 +413,12 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
                 field = a[f_slice]
                 theta_grad = np.sum(field * unit_delta, axis=0)
                 intercept_grad = np.sum(unit_delta)
-                next_delta[f_slice] += field * (1 - field) * theta * unit_delta
+                next_delta[f_slice] += theta * unit_delta
+                # if filter_shape[0]==3:qa((theta * unit_delta).shape, theta * unit_delta)
                 theta -= theta_grad * self.alpha / self.mini_batch
-                intercept -= intercept_grad * self.alpha / self.mini_batch
+                # intercept -= intercept_grad * self.alpha / self.mini_batch
 
-
-            delta = next_delta.reshape((-1, shape2size(layer_shape)))
-
+            delta = ((1-a)*a*next_delta).reshape((-1, shape2size(layer_shape)))
 
 
 
