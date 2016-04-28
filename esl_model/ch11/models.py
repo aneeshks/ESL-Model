@@ -372,7 +372,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
                 # field multiply weight and add intercept, then sigmoid it, sum the result units in field to one unit.
                 # because we use mini-batch, the first axis is the number of batch, we sum each field for each
                 # observation. After that we reshape the result to column vector, which shape is (mini_batch, 1)
-                node_result = sigmoid(np.sum(weight * field + intercept, axis=(1, 2))).reshape((-1, 1))
+                node_result = sigmoid(np.sum(weight * field, axis=(1, 2)) + intercept).reshape((-1, 1))
                 results.append(node_result)
 
             # reshape the result to to 3d. first axis is batch size, the 2st and 3rd is layer width and height.
@@ -397,7 +397,7 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         intercept_grad = np.sum(delta, axis=0)
         delta = ((1 - a) * a) * (delta @ theta.T)
         theta -= theta_grad * self.alpha / self.mini_batch
-        # intercept -= intercept_grad * self.alpha / self.mini_batch
+        intercept -= intercept_grad * self.alpha / self.mini_batch
         # reshape delta to field
         # delta = delta.reshape((-1, *layer_output[-2].shape))
 
@@ -416,10 +416,18 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
                 next_delta[f_slice] += theta * unit_delta
                 # if filter_shape[0]==3:qa((theta * unit_delta).shape, theta * unit_delta)
                 theta -= theta_grad * self.alpha / self.mini_batch
-                # intercept -= intercept_grad * self.alpha / self.mini_batch
+                intercept -= intercept_grad * self.alpha / self.mini_batch
 
             delta = ((1-a)*a*next_delta).reshape((-1, shape2size(layer_shape)))
 
+
+
+class Debug(LocallyConnectNN):
+    def _init_theta(self):
+        super()._init_theta()
+        for theta, intes in self.thetas:
+            theta[...] = 1
+            intes[...] = 1
 
 
 

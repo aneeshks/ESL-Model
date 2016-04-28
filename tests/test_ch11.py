@@ -96,7 +96,7 @@ def test_nn2(zipcode_data):
 def test_nn3(zipcode_data):
     from esl_model.ch11.models import LocallyConnectNN
     train_x, train_y, test_x, test_y, features = zipcode_data
-    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=3, n_iter=10, mini_batch=10,
+    model = LocallyConnectNN(train_x[:320], train_y[:320], n_class=10, alpha=0.95, n_iter=30, mini_batch=10,
                         hidden_layer_shape=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
 
 
@@ -113,4 +113,25 @@ def test_nn3(zipcode_data):
     print('d', np.sum(model._d[:1]))
     print('fd', np.sum(model._fd[:1]))
     assert err < 0.24
+    assert 0
+
+def test_debug(zipcode_data):
+    def sigmoid(x):
+        return x
+    from esl_model.ch11 import models
+    models.sigmoid = sigmoid
+
+    from esl_model.ch11.models import Debug
+    train_x, train_y, test_x, test_y, features = zipcode_data
+    model = Debug(train_x[:320], train_y[:320], n_class=10, alpha=0.7, n_iter=1, mini_batch=2,
+                        hidden_layer_shape=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
+
+
+    model.pre_processing()
+    model._init_theta()
+    print(model._forward_propagation(np.ones((2, 16,16))))
+    assert 0
+    model.train()
+
+
     assert 0
