@@ -107,4 +107,4 @@ def test_nn3(zipcode_data):
     print(model.rss)
     err = model.test(test_x, test_y).error_rate
     print(err)
-    assert err < 0.2
+    assert err < 0.22
