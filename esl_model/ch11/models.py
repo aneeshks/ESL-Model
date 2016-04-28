@@ -264,7 +264,6 @@ class MiniBatchNN(BaseMiniBatchNeuralNetwork):
 
     def _back_propagation(self, target, layer_output):
         delta = -(target - layer_output[-1])
-        # theta_grad = []
 
         for (theta, intercept), a in zip(reversed(self.thetas), reversed(layer_output[:-1])):
             grad = a.T @ delta
@@ -272,7 +271,6 @@ class MiniBatchNN(BaseMiniBatchNeuralNetwork):
             delta = ((1 - a) * a) * (delta @ theta.T)
             theta -= grad * self.alpha / self.mini_batch
             intercept -= intercept_grad * self.alpha / self.mini_batch
-        # return theta_grad[::-1]
 
 
 class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
@@ -353,19 +351,8 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         layer_output.append(x)
 
         for filter_shape, target_layer_shape, (weights, intercepts) in zip(self.filter_shapes, self.hidden_layer_shape, self.thetas):
-            # filter_size = filter_shape[0]
-            # filter_vector = np.arange(0, layer_shape[0]/2, self.stride)
-            # neg_filter_vector = np.arange(layer_shape[0] - 1, layer_shape[0]/2, -self.stride) - filter_size
-            #
-            # # available receptive field top left coordinate.
-            # x_points = np.concatenate((filter_vector, neg_filter_vector))
-            # print(len(x_points))
-            # y_points = x_points.copy()
-            # top_lefts = list(itertools_product(x_points, y_points))
-            # print(len(top_lefts))
             results = []
             field_slices = self._gen_field_select_slice(filter_shape, x.shape[1:], stride=self.stride)
-            # if filter_shape[0] == 5: qa(field_slices)
             for f_slice, weight, intercept in zip(field_slices, weights, intercepts):
                 field = x[f_slice]
 
@@ -398,8 +385,6 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
         delta = ((1 - a) * a) * (delta @ theta.T)
         theta -= theta_grad * self.alpha / self.mini_batch
         intercept -= intercept_grad * self.alpha / self.mini_batch
-        # reshape delta to field
-        # delta = delta.reshape((-1, *layer_output[-2].shape))
 
         reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes))
         for (thetas, intercepts), a, filter_shape in zip(*reversed_info):
@@ -414,20 +399,11 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
                 theta_grad = np.sum(field * unit_delta, axis=0)
                 intercept_grad = np.sum(unit_delta)
                 next_delta[f_slice] += theta * unit_delta
-                # if filter_shape[0]==3:qa((theta * unit_delta).shape, theta * unit_delta)
                 theta -= theta_grad * self.alpha / self.mini_batch
                 intercept -= intercept_grad * self.alpha / self.mini_batch
 
             delta = ((1-a)*a*next_delta).reshape((-1, shape2size(layer_shape)))
 
-
-
-class Debug(LocallyConnectNN):
-    def _init_theta(self):
-        super()._init_theta()
-        for theta, intes in self.thetas:
-            theta[...] = 1
-            intes[...] = 1
 
 
 
