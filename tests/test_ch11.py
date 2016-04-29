@@ -108,3 +108,21 @@ def test_nn3(zipcode_data):
     err = model.test(test_x, test_y).error_rate
     print(err)
     assert err < 0.22
+
+
+def test_com(zipcode_data):
+    from esl_model.ch11.models import LocalConnectForComputation
+    train_x, train_y, test_x, test_y, features = zipcode_data
+    model = LocalConnectForComputation(train_x[:320], train_y[:320], n_class=10, alpha=0.97, n_iter=30, mini_batch=10,
+                        hidden_layer_shape=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
+
+    model.pre_processing()
+    model.train()
+
+    print(model.y_hat[:16].flatten())
+    print(train_y[:16])
+    print(model.rss)
+    err = model.test(test_x, test_y).error_rate
+    print(err)
+    assert err < 0.22
+    assert 0

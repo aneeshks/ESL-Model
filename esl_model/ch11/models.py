@@ -407,6 +407,83 @@ class LocallyConnectNN(BaseMiniBatchNeuralNetwork):
 
 
 
+class LocalConnectForComputation(LocallyConnectNN):
+    def _init_theta(self):
+        thetas = []
+        for filter_shape, layer_shape in zip(self.filter_shapes, self.hidden_layer_shape):
+            filter_size = shape2size(filter_shape)
+            layer_size = shape2size(layer_shape)
+            random_matrix = self.random_weight_matrix((layer_size, filter_size + 1))
+            # every row store weights for one receptive field, the shape is (filter_size, 1)
+            weights = random_matrix[:, 1:]
+            intercepts = random_matrix[:, 0].reshape((-1, 1))
+            thetas.append((weights, intercepts))
+
+        # fully connect weights
+        random_matrix = self.random_weight_matrix((shape2size(self.hidden_layer_shape[-1]) + 1, self.n_class))
+        weights = random_matrix[1:]
+        intercepts = random_matrix[0]
+        thetas.append((weights, intercepts))
+
+        self.thetas = thetas
+
+    @classmethod
+    def _flat_select_x(cls, x, filter_shape, selected_layer_shape, stride):
+        field_slices = cls._gen_field_select_slice(filter_shape, selected_layer_shape, stride=stride)
+        a = []
+        for f_slice in field_slices:
+            a.append(x[f_slice].flatten())
+        return np.asarray(a).reshape((-1, len(a), shape2size(filter_shape)))
+
+    def _forward_propagation(self, x):
+        layer_output = list()
+        layer_output.append(x)
+
+        for filter_shape, target_layer_shape, (weights, intercepts) in zip(self.filter_shapes,
+                                                                           self.hidden_layer_shape,
+                                                                           self.thetas):
+
+            a = self._flat_select_x(x, filter_shape, selected_layer_shape=x.shape[1:], stride=self.stride)
+
+            result = sigmoid(np.sum(a * weights, axis=2) + intercepts.flatten())
+            x = result.reshape((-1, *target_layer_shape))
+            layer_output.append(x)
+
+        # finally, do fully connect propagation
+        x = x.reshape((-1, shape2size(x.shape[1:])))
+        output = sigmoid(x @ self.thetas[-1][0] + self.thetas[-1][1])
+        layer_output.append(output)
+        return layer_output
+
+    def _back_propagation(self, target, layer_output):
+        delta = (layer_output[-1] - target)
+        # back propagation for fully connect
+        theta, intercept = self.thetas[-1]
+        a = layer_output[-2].reshape(-1, shape2size(layer_output[-2].shape[1:]))
+        theta_grad = a.T @ delta
+        intercept_grad = np.mean(delta, axis=0)
+        delta = ((1 - a) * a) * (delta @ theta.T)
+        theta -= theta_grad * self.alpha / self.mini_batch
+        intercept -= intercept_grad * self.alpha
+
+        reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes))
+        for (thetas, intercepts), a, filter_shape in zip(*reversed_info):
+            layer_shape = a.shape[1:]
+            next_delta = np.zeros_like(a)
+            field_slices = self._gen_field_select_slice(filter_shape, layer_shape, stride=self.stride)
+            # transpose delta, make shape (batch, layer_size) -> (layer_size, batch)
+            # then reshape the unit delta to (batch, 1, 1)
+
+            for f_slice, theta, intercept, _unit_delta in zip(field_slices, thetas, intercepts, delta.T):
+                unit_delta = _unit_delta.reshape((-1, 1, 1))
+                field = a[f_slice].reshape((a.shape[0], 1, -1))
+                theta_grad = np.sum(field * unit_delta, axis=0)
+                intercept_grad = np.sum(unit_delta)
+                next_delta[f_slice] += (theta.reshape(1,-1) * unit_delta).reshape(-1, *filter_shape)
+                theta -= theta_grad.flatten() * self.alpha / self.mini_batch
+                intercept -= intercept_grad * self.alpha / self.mini_batch
+
+            delta = ((1 - a) * a * next_delta).reshape((-1, shape2size(layer_shape)))
 
 
 
