@@ -471,6 +471,20 @@ class LocalConnectForComputation(LocallyConnectNN):
             layer_shape = a.shape[1:]
             next_delta = np.zeros_like(a)
             field_slices = self._gen_field_select_slice(filter_shape, layer_shape, stride=self.stride)
+
+            #
+
+            x = self._flat_select_x(a, filter_shape, layer_shape, self.stride)
+            delta = delta.reshape(*delta.shape, 1)
+            grade_result = np.sum(x * delta, axis=0)
+            delta_result =  x*(1-x)*thetas * delta
+            for f_slice, r in zip(field_slices, delta_result):
+                next_delta[f_slice] += r.reshape((-1, *filter_shape))
+
+
+
+            #
+
             # transpose delta, make shape (batch, layer_size) -> (layer_size, batch)
             # then reshape the unit delta to (batch, 1, 1)
 
