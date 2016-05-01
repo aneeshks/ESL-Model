@@ -452,55 +452,69 @@ class LocalConnectForComputation(LocallyConnectNN):
         # finally, do fully connect propagation
         x = x.reshape((-1, shape2size(x.shape[1:])))
         output = sigmoid(x @ self.thetas[-1][0] + self.thetas[-1][1])
+        # qa(output.shape)
         layer_output.append(output)
         return layer_output
 
     def _back_propagation(self, target, layer_output):
         delta = (layer_output[-1] - target)
+        # qa(delta.shape)
         # back propagation for fully connect
         theta, intercept = self.thetas[-1]
         a = layer_output[-2].reshape(-1, shape2size(layer_output[-2].shape[1:]))
         theta_grad = a.T @ delta
-        intercept_grad = np.mean(delta, axis=0)
+        intercept_grad = np.sum(delta, axis=0)
         delta = ((1 - a) * a) * (delta @ theta.T)
         theta -= theta_grad * self.alpha / self.mini_batch
-        intercept -= intercept_grad * self.alpha
+        intercept -= intercept_grad * self.alpha / self.mini_batch
 
-        reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes))
-        for (thetas, intercepts), a, filter_shape in zip(*reversed_info):
-            layer_shape = a.shape[1:]
-            next_delta = np.zeros_like(a)
-            field_slices = self._gen_field_select_slice(filter_shape, layer_shape, stride=self.stride)
+
+
+
+        # reversed_info = map(reversed, (self.thetas[:-1], layer_output[:-2], self.filter_shapes))
+        # for (thetas, intercepts), a, filter_shape in zip(*reversed_info):
+        #     layer_shape = a.shape[1:]
+        #     next_delta = np.zeros_like(a)
+        #     field_slices = self._gen_field_select_slice(filter_shape, layer_shape, stride=self.stride)
+        #
+        #     #
+        #
+        #     x = self._flat_select_x(a, filter_shape, layer_shape, self.stride)
+        #     delta = delta.reshape(*delta.shape, 1)
+        #     grade_result = np.mean(x * delta, axis=0)
+        #     inte_grade =  np.mean(delta, axis=0)
+        #     delta_result = thetas * delta
+        #     # qa(delta_result[:, 1, :].reshape((-1, *filter_shape)).shape)
+        #     for idx, f_slice in enumerate(field_slices):
+        #         next_delta[f_slice] += delta_result[:,idx,:].reshape((-1, *filter_shape))
+        #     thetas -= grade_result * self.alpha
+        #     # qa(grade_result)
+        #     # intercepts -= inte_grade * self.alpha
+        #     delta = ((1-a)*a*next_delta).reshape(next_delta.shape[0], shape2size(next_delta.shape[1:]))
 
             #
 
-            x = self._flat_select_x(a, filter_shape, layer_shape, self.stride)
-            delta = delta.reshape(*delta.shape, 1)
-            grade_result = np.sum(x * delta, axis=0)
-            delta_result =  x*(1-x)*thetas * delta
-            for f_slice, r in zip(field_slices, delta_result):
-                next_delta[f_slice] += r.reshape((-1, *filter_shape))
-
-
-
+            # # transpose delta, make shape (batch, layer_size) -> (layer_size, batch)
+            # # then reshape the unit delta to (batch, 1, 1)
             #
-
-            # transpose delta, make shape (batch, layer_size) -> (layer_size, batch)
-            # then reshape the unit delta to (batch, 1, 1)
-
-            for f_slice, theta, intercept, _unit_delta in zip(field_slices, thetas, intercepts, delta.T):
-                unit_delta = _unit_delta.reshape((-1, 1, 1))
-                field = a[f_slice].reshape((a.shape[0], 1, -1))
-                theta_grad = np.sum(field * unit_delta, axis=0)
-                intercept_grad = np.sum(unit_delta)
-                next_delta[f_slice] += (theta.reshape(1,-1) * unit_delta).reshape(-1, *filter_shape)
-                theta -= theta_grad.flatten() * self.alpha / self.mini_batch
-                intercept -= intercept_grad * self.alpha / self.mini_batch
-
-            delta = ((1 - a) * a * next_delta).reshape((-1, shape2size(layer_shape)))
+            # for f_slice, theta, intercept, _unit_delta in zip(field_slices, thetas, intercepts, delta.T):
+            #     unit_delta = _unit_delta.reshape((-1, 1, 1))
+            #     field = a[f_slice].reshape((a.shape[0], 1, -1))
+            #     theta_grad = np.sum(field * unit_delta, axis=0)
+            #     intercept_grad = np.sum(unit_delta)
+            #     next_delta[f_slice] += (theta.reshape(1,-1) * unit_delta).reshape(-1, *filter_shape)
+            #     theta -= theta_grad.flatten() * self.alpha / self.mini_batch
+            #     intercept -= intercept_grad * self.alpha / self.mini_batch
+            #
+            # delta = ((1 - a) * a * next_delta).reshape((-1, shape2size(layer_shape)))
 
 
-
+class Debug(LocalConnectForComputation):
+    def _forward_propagation(self, x):
+        for t, i in self.thetas:
+            t[...]=2
+            i[...] =1
+        return super()._forward_propagation(x)
 
 
 

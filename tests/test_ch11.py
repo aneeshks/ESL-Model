@@ -113,8 +113,8 @@ def test_nn3(zipcode_data):
 def test_com(zipcode_data):
     from esl_model.ch11.models import LocalConnectForComputation
     train_x, train_y, test_x, test_y, features = zipcode_data
-    model = LocalConnectForComputation(train_x[:320], train_y[:320], n_class=10, alpha=0.97, n_iter=30, mini_batch=10,
-                        hidden_layer_shape=[(8,8), (4,4)], filter_shapes=[(3,3), (5,5)], stride=2)
+    model = LocalConnectForComputation(train_x[:320], train_y[:320], n_class=10, alpha=1, n_iter=60, mini_batch=10,
+                        hidden_layer_shape=[(8,8)], filter_shapes=[(3,3)], stride=2)
 
     model.pre_processing()
     model.train()
@@ -125,4 +125,22 @@ def test_com(zipcode_data):
     err = model.test(test_x, test_y).error_rate
     print(err)
     assert err < 0.22
+    assert 0
+
+
+def test_debug(zipcode_data):
+    sigmoid = lambda x: x
+
+    from esl_model.ch11.models import Debug
+    from esl_model.ch11 import models
+    models.sigmoid =  sigmoid
+    train_x, train_y, test_x, test_y, features = zipcode_data
+    model = Debug(train_x[:320], train_y[:320], n_class=10, alpha=3, n_iter=20, mini_batch=2,
+                                       hidden_layer_shape=[(8, 8), (4, 4)], filter_shapes=[(3, 3), (5, 5)], stride=2)
+
+    model.pre_processing()
+    model.train()
+    x = np.ones((2, 16, 16))
+    # x[0,0,2] = 0
+    print(model._forward_propagation(x))
     assert 0
