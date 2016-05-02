@@ -139,8 +139,9 @@ def test_debug(zipcode_data):
                                        hidden_layer_shape=[(8, 8), (4, 4)], filter_shapes=[(3, 3), (5, 5)], stride=2)
 
     model.pre_processing()
-    model.train()
+    model._init_theta()
+    # model.train()
     x = np.ones((2, 16, 16))
-    # x[0,0,2] = 0
+    x[1,0,2] = 0
     print(model._forward_propagation(x))
     assert 0

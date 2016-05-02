@@ -432,8 +432,8 @@ class LocalConnectForComputation(LocallyConnectNN):
         field_slices = cls._gen_field_select_slice(filter_shape, selected_layer_shape, stride=stride)
         a = []
         for f_slice in field_slices:
-            a.append(x[f_slice].flatten())
-        return np.asarray(a).reshape((-1, len(a), shape2size(filter_shape)))
+            a.append(x[f_slice])
+        return np.hstack(a).reshape((-1, len(a), shape2size(filter_shape)))
 
     def _forward_propagation(self, x):
         layer_output = list()
