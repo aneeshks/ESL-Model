@@ -1,2 +1,2 @@
 include README.rst
-recursive-include esl_model/datasets/data *.csv
+recursive-include esl_model/datasets/data *
